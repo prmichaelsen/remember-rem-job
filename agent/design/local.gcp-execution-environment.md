@@ -49,7 +49,7 @@ This document specifies the GCP execution environment for REM. The core decision
 apiVersion: run.googleapis.com/v1
 kind: Job
 metadata:
-  name: remember-rem
+  name: remember-rem-job
 spec:
   template:
     spec:
@@ -57,7 +57,7 @@ spec:
       template:
         spec:
           containers:
-            - image: gcr.io/{PROJECT_ID}/remember-rem:latest
+            - image: gcr.io/{PROJECT_ID}/remember-rem-job:latest
               resources:
                 limits:
                   memory: "1Gi"
@@ -80,7 +80,7 @@ spec:
 
 ```
 Schedule: 0 * * * * (every hour)
-Target: Cloud Run Job (remember-rem)
+Target: Cloud Run Job (remember-rem-job)
 Timezone: UTC
 Retry config: 0 retries (if the trigger fails, wait for next hour)
 ```

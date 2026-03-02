@@ -1,4 +1,4 @@
-# remember-rem
+# remember-rem-job
 
 Background Cloud Run service that automatically discovers and creates relationships between memories using embedding similarity and LLM validation.
 
@@ -32,7 +32,7 @@ See [AGENT.md](./AGENT.md) for complete ACP documentation.
 ## Project Structure
 
 ```
-remember-rem/
+remember-rem-job/
 ├── AGENT.md              # ACP methodology
 ├── agent/                # ACP directory
 │   ├── design/          # Design documents
