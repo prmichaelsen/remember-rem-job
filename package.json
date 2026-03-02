@@ -13,7 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "fetch-secrets:e1": "tsx scripts/fetch-e1-secrets.ts",
-    "deploy:e1": "tsx scripts/deploy-e1.ts"
+    "deploy:e1": "tsx scripts/deploy-e1.ts",
+    "verify:e1": "tsx scripts/verify-e1.ts"
   },
   "engines": {
     "node": ">=22.0.0"

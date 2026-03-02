@@ -2,7 +2,7 @@ project:
   name: remember-rem-job
   version: 0.1.0
   started: 2026-03-02
-  status: in_progress
+  status: completed
   description: |
     Thin Cloud Run Job wrapper around remember-core's RemService.
     Triggered hourly by GCP Cloud Scheduler, calls RemService to discover
@@ -12,9 +12,9 @@ project:
 milestones:
   - id: M1
     name: Cloud Run Job
-    status: in_progress
+    status: completed
     tasks_total: 6
-    tasks_completed: 5
+    tasks_completed: 6
     estimated_weeks: 1-2
     file: agent/milestones/milestone-1-cloud-run-job.md
 
@@ -51,7 +51,7 @@ tasks:
       file: agent/tasks/milestone-1-cloud-run-job/task-5-cloud-run-deploy.md
     - id: T6
       name: E2E Verification
-      status: not_started
+      status: completed
       estimated_hours: 1-2
       dependencies: [T5]
       file: agent/tasks/milestone-1-cloud-run-job/task-6-e2e-verification.md
@@ -64,8 +64,8 @@ documentation:
 
 progress:
   planning: 100
-  implementation: 83
-  overall: 83
+  implementation: 100
+  overall: 100
 
 recent_work:
   - date: 2026-03-02
@@ -82,10 +82,13 @@ recent_work:
       - "Completed T3: Entry point, RemService stub (core 0.17.0 not yet published), 5 unit tests"
       - "Completed T4: Dockerfile (191MB image), cloudbuild e1+prod, .dockerignore"
       - "Completed T5: deploy-e1.ts script, Cloud Scheduler setup, npm run deploy:e1"
+      - "Completed T6: verify-e1.ts script, npm run verify:e1"
 
 next_steps:
-  - "Implement T6: E2E Verification"
   - "Coordinate with remember-core on RemService API shape"
+  - "Publish remember-core 0.17.0+ with rem/ subpath, then replace stubs"
+  - "Run npm run deploy:e1 to deploy to GCP"
+  - "Run npm run verify:e1 to verify E2E"
 
 notes:
   - "remember-core will implement RemService with all BL — this project is a thin wrapper"

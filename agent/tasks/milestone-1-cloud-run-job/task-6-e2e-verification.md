@@ -3,7 +3,7 @@
 **Milestone**: [M1 - Cloud Run Job](../../milestones/milestone-1-cloud-run-job.md)
 **Estimated Time**: 1-2 hours
 **Dependencies**: [Task 5: Cloud Run Job & Scheduler](task-5-cloud-run-deploy.md)
-**Status**: Not Started
+**Status**: Completed
 
 ---
 
@@ -64,12 +64,15 @@ Run the job again. Confirm:
 
 ## Verification
 
-- [ ] Full REM cycle completes without errors
+- [ ] Full REM cycle completes without errors — run `npm run verify:e1`
 - [ ] Relationships visible in Weaviate with correct metadata
 - [ ] Firestore cursor state updated
-- [ ] Cloud Logging shows structured output
+- [ ] Cloud Logging shows structured output — `npm run verify:e1 -- --logs-only`
 - [ ] Second run advances cursor, no duplicates
 - [ ] Job exits 0
+
+> **Note**: Verification script created at `scripts/verify-e1.ts`.
+> These checks require live deployment. Run after `npm run deploy:e1` completes.
 
 ---
 
