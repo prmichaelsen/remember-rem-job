@@ -4,24 +4,68 @@ project:
   started: 2026-03-02
   status: in_progress
   description: |
-    Background Cloud Run service that automatically discovers and creates
-    relationships between memories using embedding similarity and Haiku validation.
-    Triggered hourly by GCP Cloud Scheduler, processes collections via startAfter cursor.
+    Thin Cloud Run Job wrapper around remember-core's RemService.
+    Triggered hourly by GCP Cloud Scheduler, calls RemService to discover
+    and create relationships between memories using embedding similarity
+    and Haiku validation.
 
-milestones: []
+milestones:
+  - id: M1
+    name: Cloud Run Job
+    status: not_started
+    tasks_total: 6
+    tasks_completed: 0
+    estimated_weeks: 1-2
+    file: agent/milestones/milestone-1-cloud-run-job.md
 
-tasks: {}
+tasks:
+  milestone_1:
+    - id: T1
+      name: Project Scaffold
+      status: not_started
+      estimated_hours: 1-2
+      file: agent/tasks/milestone-1-cloud-run-job/task-1-project-scaffold.md
+    - id: T2
+      name: ConfigService & Secrets
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T1]
+      file: agent/tasks/milestone-1-cloud-run-job/task-2-config-service.md
+    - id: T3
+      name: Entry Point & RemService Integration
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T2]
+      file: agent/tasks/milestone-1-cloud-run-job/task-3-entry-point.md
+    - id: T4
+      name: Dockerfile & Cloud Build
+      status: not_started
+      estimated_hours: 2
+      dependencies: [T3]
+      file: agent/tasks/milestone-1-cloud-run-job/task-4-docker-cloud-build.md
+    - id: T5
+      name: Cloud Run Job & Scheduler
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T4]
+      file: agent/tasks/milestone-1-cloud-run-job/task-5-cloud-run-deploy.md
+    - id: T6
+      name: E2E Verification
+      status: not_started
+      estimated_hours: 1-2
+      dependencies: [T5]
+      file: agent/tasks/milestone-1-cloud-run-job/task-6-e2e-verification.md
 
 documentation:
-  design_documents: 0
-  milestone_documents: 0
+  design_documents: 2
+  milestone_documents: 1
   pattern_documents: 0
-  task_documents: 0
+  task_documents: 6
 
 progress:
-  planning: 0
+  planning: 100
   implementation: 0
-  overall: 0
+  overall: 10
 
 recent_work:
   - date: 2026-03-02
@@ -29,12 +73,20 @@ recent_work:
       - "Initialized agent context with @acp-init"
       - "Reviewed design specification from agentbase.me-e1 (local.rem-background-relationships.md)"
       - "Explored remember-core services (MemoryService, RelationshipService, Weaviate, Firestore)"
+      - "Created GCP execution environment design (Cloud Run Jobs)"
+      - "Explored remember-rest-service secret management patterns"
+      - "Renamed project to remember-rem-job"
+      - "Planned M1: Cloud Run Job (6 tasks)"
 
 next_steps:
-  - Define project requirements in agent/design/requirements.md
-  - Plan milestones and tasks with @acp.plan
-  - Start development with @acp.proceed
+  - "Start T1: Project Scaffold"
+  - "Implement T2: ConfigService & Secrets"
+  - "Coordinate with remember-core on RemService API shape"
 
-notes: []
+notes:
+  - "remember-core will implement RemService with all BL — this project is a thin wrapper"
+  - "Most secrets shared with remember-rest-service — reuse existing Secret Manager entries"
+  - "Only new secret: ANTHROPIC_API_KEY for Haiku cluster validation"
 
-current_blockers: []
+current_blockers:
+  - "remember-core RemService not yet implemented (can work in parallel with stub)"
