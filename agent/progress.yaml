@@ -14,7 +14,7 @@ milestones:
     name: Cloud Run Job
     status: in_progress
     tasks_total: 6
-    tasks_completed: 3
+    tasks_completed: 4
     estimated_weeks: 1-2
     file: agent/milestones/milestone-1-cloud-run-job.md
 
@@ -39,7 +39,7 @@ tasks:
       file: agent/tasks/milestone-1-cloud-run-job/task-3-entry-point.md
     - id: T4
       name: Dockerfile & Cloud Build
-      status: not_started
+      status: completed
       estimated_hours: 2
       dependencies: [T3]
       file: agent/tasks/milestone-1-cloud-run-job/task-4-docker-cloud-build.md
@@ -64,8 +64,8 @@ documentation:
 
 progress:
   planning: 100
-  implementation: 50
-  overall: 50
+  implementation: 67
+  overall: 67
 
 recent_work:
   - date: 2026-03-02
@@ -80,9 +80,11 @@ recent_work:
       - "Completed T1: Project Scaffold (package.json, tsconfig, deps)"
       - "Completed T2: ConfigService, .env.example, fetch-secrets script, 6 unit tests"
       - "Completed T3: Entry point, RemService stub (core 0.17.0 not yet published), 5 unit tests"
+      - "Completed T4: Dockerfile (191MB image), cloudbuild e1+prod, .dockerignore"
 
 next_steps:
-  - "Implement T4: Dockerfile & Cloud Build"
+  - "Implement T5: Cloud Run Job & Scheduler"
+  - "Implement T6: E2E Verification"
   - "Coordinate with remember-core on RemService API shape"
 
 notes:

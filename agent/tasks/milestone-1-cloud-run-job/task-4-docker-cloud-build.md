@@ -3,7 +3,7 @@
 **Milestone**: [M1 - Cloud Run Job](../../milestones/milestone-1-cloud-run-job.md)
 **Estimated Time**: 2 hours
 **Dependencies**: [Task 3: Entry Point & RemService Integration](task-3-entry-point.md)
-**Status**: Not Started
+**Status**: Completed
 
 ---
 
@@ -69,12 +69,12 @@ Exclude: node_modules, .git, agent/, .claude/, .env*, tests/, *.md
 
 ## Verification
 
-- [ ] `docker build .` succeeds locally
-- [ ] Container starts and exits cleanly with mock env vars
-- [ ] cloudbuild.e1.yaml has correct secret mappings
-- [ ] cloudbuild.yaml has correct secret mappings
-- [ ] .dockerignore excludes unnecessary files
-- [ ] Image size is reasonable (< 200MB)
+- [x] `docker build .` succeeds locally
+- [x] Container starts and exits cleanly with mock env vars
+- [x] cloudbuild.e1.yaml has correct secret mappings
+- [x] cloudbuild.yaml has correct secret mappings
+- [x] .dockerignore excludes unnecessary files
+- [x] Image size is reasonable (191MB < 200MB)
 
 ---
 
