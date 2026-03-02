@@ -3,7 +3,7 @@
 **Milestone**: [M1 - Cloud Run Job](../../milestones/milestone-1-cloud-run-job.md)
 **Estimated Time**: 2-3 hours
 **Dependencies**: [Task 4: Dockerfile & Cloud Build](task-4-docker-cloud-build.md)
-**Status**: Not Started
+**Status**: Completed
 
 ---
 
@@ -76,13 +76,16 @@ Wait for next scheduled execution or trigger manually via Cloud Scheduler UI. Co
 
 ## Verification
 
-- [ ] ANTHROPIC_API_KEY secret created in Secret Manager (e1)
-- [ ] Cloud Build succeeds for e1
+- [ ] ANTHROPIC_API_KEY secret created in Secret Manager (e1) — manual step
+- [ ] Cloud Build succeeds for e1 — run `npm run deploy:e1`
 - [ ] Cloud Run Job visible in GCP console
-- [ ] Manual `gcloud run jobs execute` succeeds
-- [ ] Cloud Scheduler trigger created
+- [ ] Manual `gcloud run jobs execute` succeeds — run `npm run deploy:e1 -- --execute`
+- [ ] Cloud Scheduler trigger created — automated by deploy script
 - [ ] Scheduled execution completes successfully
 - [ ] All secrets injected correctly (no "missing env var" errors)
+
+> **Note**: Deploy script created at `scripts/deploy-e1.ts`. Run `npm run deploy:e1` to execute.
+> Manual prerequisite: create the ANTHROPIC_API_KEY secret first.
 
 ---
 

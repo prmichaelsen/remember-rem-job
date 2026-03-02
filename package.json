@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "fetch-secrets:e1": "tsx scripts/fetch-e1-secrets.ts"
+    "fetch-secrets:e1": "tsx scripts/fetch-e1-secrets.ts",
+    "deploy:e1": "tsx scripts/deploy-e1.ts"
   },
   "engines": {
     "node": ">=22.0.0"
