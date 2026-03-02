@@ -14,7 +14,7 @@ milestones:
     name: Cloud Run Job
     status: in_progress
     tasks_total: 6
-    tasks_completed: 1
+    tasks_completed: 2
     estimated_weeks: 1-2
     file: agent/milestones/milestone-1-cloud-run-job.md
 
@@ -27,7 +27,7 @@ tasks:
       file: agent/tasks/milestone-1-cloud-run-job/task-1-project-scaffold.md
     - id: T2
       name: ConfigService & Secrets
-      status: not_started
+      status: completed
       estimated_hours: 2-3
       dependencies: [T1]
       file: agent/tasks/milestone-1-cloud-run-job/task-2-config-service.md
@@ -64,8 +64,8 @@ documentation:
 
 progress:
   planning: 100
-  implementation: 17
-  overall: 20
+  implementation: 33
+  overall: 35
 
 recent_work:
   - date: 2026-03-02
@@ -78,10 +78,11 @@ recent_work:
       - "Renamed project to remember-rem-job"
       - "Planned M1: Cloud Run Job (6 tasks)"
       - "Completed T1: Project Scaffold (package.json, tsconfig, deps)"
+      - "Completed T2: ConfigService, .env.example, fetch-secrets script, 6 unit tests"
 
 next_steps:
-  - "Implement T2: ConfigService & Secrets"
   - "Implement T3: Entry Point & RemService Integration"
+  - "Implement T4: Dockerfile & Cloud Build"
   - "Coordinate with remember-core on RemService API shape"
 
 notes:

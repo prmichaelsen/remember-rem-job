@@ -1,0 +1,33 @@
+export interface WeaviateConfig {
+  restUrl: string;
+  grpcUrl: string;
+  apiKey: string;
+}
+
+export interface FirebaseConfig {
+  projectId: string;
+  serviceAccountKey: string;
+}
+
+export interface EmbeddingsConfig {
+  provider: string;
+  model: string;
+  apiKey: string;
+}
+
+export interface AnthropicConfig {
+  apiKey: string;
+}
+
+export interface AppConfig {
+  nodeEnv: string;
+  logLevel: string;
+}
+
+export interface Config {
+  app: AppConfig;
+  weaviate: WeaviateConfig;
+  firebase: FirebaseConfig;
+  embeddings: EmbeddingsConfig;
+  anthropic: AnthropicConfig;
+}

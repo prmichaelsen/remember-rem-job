@@ -11,7 +11,8 @@
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "fetch-secrets:e1": "tsx scripts/fetch-e1-secrets.ts"
   },
   "engines": {
     "node": ">=22.0.0"
