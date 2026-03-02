@@ -1,0 +1,38 @@
+{
+  "name": "remember-rem-job",
+  "version": "0.1.0",
+  "description": "Cloud Run Job wrapper for remember-core RemService — discovers and creates relationships between memories",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "keywords": [
+    "remember",
+    "rem",
+    "relationships",
+    "cloud-run",
+    "cron"
+  ],
+  "author": "prmichaelsen",
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.78.0",
+    "@prmichaelsen/remember-core": "^0.16.13"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
