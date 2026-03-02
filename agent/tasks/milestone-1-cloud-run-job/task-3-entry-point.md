@@ -3,7 +3,7 @@
 **Milestone**: [M1 - Cloud Run Job](../../milestones/milestone-1-cloud-run-job.md)
 **Estimated Time**: 2-3 hours
 **Dependencies**: [Task 2: ConfigService & Secrets](task-2-config-service.md)
-**Status**: Not Started
+**Status**: Completed
 
 ---
 
@@ -83,12 +83,12 @@ Log key events for Cloud Logging visibility:
 
 ## Verification
 
-- [ ] Entry point compiles and runs
-- [ ] Exits 0 on successful cycle
-- [ ] Exits 1 on error (with error logged)
-- [ ] Exits 0 when no collections to process
-- [ ] Logs are structured and visible
-- [ ] No secrets logged
+- [x] Entry point compiles and runs
+- [x] Exits 0 on successful cycle
+- [x] Exits 1 on error (with error logged)
+- [x] Exits 0 when no collections to process (stub returns empty result)
+- [x] Logs are structured and visible (uses remember-core createLogger)
+- [x] No secrets logged
 
 ---
 

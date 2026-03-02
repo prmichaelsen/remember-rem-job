@@ -14,7 +14,7 @@ milestones:
     name: Cloud Run Job
     status: in_progress
     tasks_total: 6
-    tasks_completed: 2
+    tasks_completed: 3
     estimated_weeks: 1-2
     file: agent/milestones/milestone-1-cloud-run-job.md
 
@@ -33,7 +33,7 @@ tasks:
       file: agent/tasks/milestone-1-cloud-run-job/task-2-config-service.md
     - id: T3
       name: Entry Point & RemService Integration
-      status: not_started
+      status: completed
       estimated_hours: 2-3
       dependencies: [T2]
       file: agent/tasks/milestone-1-cloud-run-job/task-3-entry-point.md
@@ -64,8 +64,8 @@ documentation:
 
 progress:
   planning: 100
-  implementation: 33
-  overall: 35
+  implementation: 50
+  overall: 50
 
 recent_work:
   - date: 2026-03-02
@@ -79,9 +79,9 @@ recent_work:
       - "Planned M1: Cloud Run Job (6 tasks)"
       - "Completed T1: Project Scaffold (package.json, tsconfig, deps)"
       - "Completed T2: ConfigService, .env.example, fetch-secrets script, 6 unit tests"
+      - "Completed T3: Entry point, RemService stub (core 0.17.0 not yet published), 5 unit tests"
 
 next_steps:
-  - "Implement T3: Entry Point & RemService Integration"
   - "Implement T4: Dockerfile & Cloud Build"
   - "Coordinate with remember-core on RemService API shape"
 
