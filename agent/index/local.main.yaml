@@ -1,0 +1,50 @@
+# agent/index/local.main.yaml
+# Key file index for project-local files
+# See: agent/design/local.key-file-index-system.md
+#
+# Naming convention: {namespace}.{qualifier}.yaml
+#   - namespace: "local" for project files, package name for packages
+#   - qualifier: "main" is the default, can use others for categorization
+#
+# Schema:
+#   path        (string, required)  - Explicit file path, no globs
+#   weight      (float, required)   - 0.0 to 1.0 importance (1.0 = always read)
+#   kind        (enum, required)    - pattern, command, design, requirements
+#   description (string, required)  - What the file contains and why it matters
+#   rationale   (string, required)  - Why this file is in the index
+#   applies     (string, required)  - Comma-separated fully qualified command names
+#
+# Recommended limits:
+#   - Per-namespace: 5-10 entries maximum
+#   - Total across namespaces: 15-20 entries maximum
+#   - High-weight files (>= 0.8): 3-5 per namespace
+#
+# Implicit key files (NOT listed here):
+#   - AGENT.md (always read by @acp.init)
+#   - agent/progress.yaml (always read by @acp.init)
+
+local:
+  index:
+    - path: agent/design/local.rem-background-relationships.md
+      weight: 1.0
+      kind: design
+      description: |
+        Comprehensive design specification for REM — architecture, clustering
+        algorithm, Haiku validation, deduplication, relationship CRUD, similarity
+        thresholds, and all design decisions. The sole blueprint for the project.
+      rationale: |
+        Must be read before any planning, task creation, or implementation work.
+        Contains every architectural decision, algorithm detail, and dependency
+        required to build REM.
+      applies: acp.init, acp.plan, acp.proceed, acp.task-create, acp.design-create
+
+    - path: agent/design/local.gcp-execution-environment.md
+      weight: 0.7
+      kind: design
+      description: |
+        GCP execution environment design — Cloud Run Jobs triggered by Cloud
+        Scheduler, timeout configuration, container spec, and deployment strategy.
+      rationale: |
+        Required context for deployment, infrastructure, and CI/CD tasks.
+        Defines the runtime constraints that affect service implementation.
+      applies: acp.init, acp.plan, acp.proceed, acp.task-create
