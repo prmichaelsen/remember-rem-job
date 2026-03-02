@@ -1,5 +1,5 @@
 /**
- * E2E verification script for remember-rem-job on e1 environment.
+ * E2E verification script for remember-rem-job (production).
  *
  * Checks:
  * 1. Cloud Run Job exists and is deployed
@@ -8,19 +8,19 @@
  * 4. Reads recent logs
  *
  * Prerequisites:
- * - Job already deployed via `npm run deploy:e1`
+ * - Job already deployed via `npm run deploy`
  * - gcloud CLI authenticated
  *
  * Usage:
- *   npx tsx scripts/verify-e1.ts
- *   npx tsx scripts/verify-e1.ts --logs-only    # just show recent logs
+ *   npx tsx scripts/verify.ts
+ *   npx tsx scripts/verify.ts --logs-only    # just show recent logs
  */
 
 import { execSync } from 'node:child_process';
 
 const PROJECT = 'com-f5-parm';
 const REGION = 'us-central1';
-const JOB_NAME = 'remember-rem-job-e1';
+const JOB_NAME = 'remember-rem-job';
 
 const args = process.argv.slice(2);
 const logsOnly = args.includes('--logs-only');
@@ -43,7 +43,7 @@ try {
   );
   console.log(`Job status: ${jobInfo}`);
 } catch {
-  console.error(`Job ${JOB_NAME} not found. Run 'npm run deploy:e1' first.`);
+  console.error(`Job ${JOB_NAME} not found. Run 'npm run deploy' first.`);
   process.exit(1);
 }
 
@@ -57,8 +57,6 @@ if (!logsOnly) {
     );
     console.log(`Execution: ${result}`);
     console.log('\nWaiting 30s for job to complete...');
-
-    // Wait for job to finish
     execSync('sleep 30');
   } catch (err) {
     console.error('Failed to execute job:', err);

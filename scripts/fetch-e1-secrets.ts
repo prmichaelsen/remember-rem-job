@@ -13,7 +13,7 @@ const SECRETS: Record<string, string> = {
   EMBEDDINGS_PROVIDER: 'remember-e1-embeddings-provider',
   EMBEDDINGS_MODEL: 'remember-e1-embeddings-model',
   EMBEDDINGS_API_KEY: 'remember-e1-openai-embeddings-api-key',
-  ANTHROPIC_API_KEY: 'remember-e1-anthropic-api-key',
+  ANTHROPIC_API_KEY: 'remember-anthropic-key',
 };
 
 const lines: string[] = [];

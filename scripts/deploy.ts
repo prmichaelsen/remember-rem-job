@@ -1,23 +1,24 @@
 /**
- * Deploy remember-rem-job to GCP e1 environment.
+ * Deploy remember-rem-job to GCP production.
  *
  * Prerequisites:
  * - gcloud CLI authenticated with com-f5-parm project
- * - remember-e1-anthropic-api-key secret exists in Secret Manager
- *   (create with: echo -n "sk-ant-..." | gcloud secrets create remember-e1-anthropic-api-key --data-file=- --project=com-f5-parm)
+ * - All secrets exist in Secret Manager (remember-* prefix)
  *
  * Usage:
- *   npx tsx scripts/deploy-e1.ts
- *   npx tsx scripts/deploy-e1.ts --skip-build    # skip Cloud Build, just create scheduler
- *   npx tsx scripts/deploy-e1.ts --execute        # manually execute the job after deploy
+ *   npx tsx scripts/deploy.ts
+ *   npx tsx scripts/deploy.ts --skip-build    # skip Cloud Build, just create scheduler
+ *   npx tsx scripts/deploy.ts --execute        # manually execute the job after deploy
  */
 
 import { execSync } from 'node:child_process';
 
 const PROJECT = 'com-f5-parm';
 const REGION = 'us-central1';
-const JOB_NAME = 'remember-rem-job-e1';
-const SCHEDULER_NAME = 'remember-rem-job-e1-trigger';
+const JOB_NAME = 'remember-rem-job';
+const SCHEDULER_NAME = 'remember-rem-job-trigger';
+
+const COMMIT_SHA = execSync('git rev-parse HEAD', { encoding: 'utf-8' }).trim();
 
 const args = process.argv.slice(2);
 const skipBuild = args.includes('--skip-build');
@@ -32,15 +33,14 @@ function run(cmd: string, label: string) {
 // 1. Submit Cloud Build
 if (!skipBuild) {
   run(
-    `gcloud builds submit --config=cloudbuild.e1.yaml --project=${PROJECT}`,
-    'Submitting Cloud Build (e1)',
+    `gcloud builds submit --config=cloudbuild.yaml --substitutions=COMMIT_SHA=${COMMIT_SHA} --project=${PROJECT}`,
+    'Submitting Cloud Build',
   );
 }
 
 // 2. Create Cloud Scheduler (idempotent — update if exists)
 const schedulerUri = `https://${REGION}-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/${PROJECT}/jobs/${JOB_NAME}:run`;
 
-// Get the default compute service account
 const serviceAccount = execSync(
   `gcloud iam service-accounts list --project=${PROJECT} --filter="displayName:Compute Engine default" --format="value(email)"`,
   { encoding: 'utf-8' },

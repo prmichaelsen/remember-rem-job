@@ -34,7 +34,7 @@ steps:
       - '--task-timeout=3000s'
       - '--max-retries=0'
       - '--set-env-vars=NODE_ENV=production'
-      - '--update-secrets=WEAVIATE_REST_URL=remember-weaviate-rest-url:latest,WEAVIATE_GRPC_URL=remember-weaviate-grpc-url:latest,WEAVIATE_API_KEY=remember-weaviate-api-key:latest,FIREBASE_PROJECT_ID=remember-firebase-project-id:latest,FIREBASE_ADMIN_SERVICE_ACCOUNT_KEY=remember-firebase-admin-service-account-key:latest,EMBEDDINGS_PROVIDER=remember-embeddings-provider:latest,EMBEDDINGS_MODEL=remember-embeddings-model:latest,EMBEDDINGS_API_KEY=remember-openai-embeddings-api-key:latest,ANTHROPIC_API_KEY=remember-anthropic-api-key:latest'
+      - '--update-secrets=WEAVIATE_REST_URL=remember-weaviate-rest-url:latest,WEAVIATE_GRPC_URL=remember-weaviate-grpc-url:latest,WEAVIATE_API_KEY=remember-weaviate-api-key:latest,FIREBASE_PROJECT_ID=remember-firebase-project-id:latest,FIREBASE_ADMIN_SERVICE_ACCOUNT_KEY=remember-firebase-admin-service-account-key:latest,EMBEDDINGS_PROVIDER=remember-embeddings-provider:latest,EMBEDDINGS_MODEL=remember-embeddings-model:latest,EMBEDDINGS_API_KEY=remember-openai-embeddings-api-key:latest,ANTHROPIC_API_KEY=remember-anthropic-key:latest'
 
 images:
   - 'gcr.io/$PROJECT_ID/remember-rem-job:$COMMIT_SHA'
