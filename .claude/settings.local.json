@@ -17,7 +17,8 @@
       "Bash(/tmp/check-weaviate-api.js:*)",
       "Bash(npm link:*)",
       "Bash(grep:*)",
-      "Bash(/tmp/test-env-load.mjs:*)"
+      "Bash(/tmp/test-env-load.mjs:*)",
+      "Bash(npm test:*)"
     ]
   }
 }

@@ -23,10 +23,12 @@ import { ConfigService } from '../src/config/config.service.js';
 const args = process.argv.slice(2);
 const envFileArg = args.find(arg => arg.startsWith('--env-file='));
 const envArg = args.find(arg => arg.startsWith('--env='));
+const batchArg = args.find(arg => arg.startsWith('--batch='));
 
 // Determine env file path
 let envFile: string;
 let envPath: string;
+let batch: number = 30;
 
 if (envFileArg) {
   // Custom file path
@@ -46,6 +48,17 @@ if (!existsSync(envPath)) {
   }
   console.error(`\nOr specify a custom file: --env-file=path/to/.env\n`);
   process.exit(1);
+}
+
+if (batchArg) {
+  try {
+    const batchValue = batchArg.split('=')[1];
+    batch = parseInt(batchValue, 10);
+  } catch (e) {
+    console.error("\bBatch not a number");
+    process.exit(1);
+  }
+
 }
 
 console.log(`\n📂 Loading environment from: ${envFile}`);
@@ -132,7 +145,7 @@ async function main(): Promise<void> {
     haikuClient,
     logger,
     config: {
-      max_candidates_per_run: 5000, // Local testing: process large batch in one cycle
+      max_candidates_per_run: batch,
     },
   });
   console.log('   ✓ RemService created\n');
