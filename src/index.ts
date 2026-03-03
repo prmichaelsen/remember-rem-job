@@ -13,13 +13,11 @@ import {
 import { initFirestore } from '@prmichaelsen/remember-core/database/firestore';
 import { createLogger, RelationshipService } from '@prmichaelsen/remember-core';
 import type { LogLevel } from '@prmichaelsen/remember-core';
-
-// TODO: Replace with @prmichaelsen/remember-core/rem once 0.17.0+ is published
 import {
   RemService,
   RemStateStore,
   createHaikuClient,
-} from './stubs/rem.js';
+} from '@prmichaelsen/remember-core/rem';
 
 async function main(): Promise<void> {
   // 1. Load config (fail-fast on missing env vars)

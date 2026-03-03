@@ -1,6 +1,6 @@
 {
   "name": "remember-rem-job",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Cloud Run Job wrapper for remember-core RemService — discovers and creates relationships between memories",
   "private": true,
   "type": "module",
@@ -30,7 +30,7 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@prmichaelsen/remember-core": "^0.19.2"
+    "@prmichaelsen/remember-core": "^0.19.3"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",

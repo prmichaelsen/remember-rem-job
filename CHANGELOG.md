@@ -1,0 +1,38 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.2.0] - 2026-03-03
+
+### Changed
+- Replace RemService stub with real implementation from @prmichaelsen/remember-core@0.19.3
+- Update imports to use @prmichaelsen/remember-core/rem subpath
+- Simplify tests to contract-only tests (integration testing via E2E scripts)
+
+### Removed
+- Remove stub implementation (src/stubs/rem.ts) - no longer needed
+- Remove blocker from progress tracking - RemService fully available
+
+### Fixed
+- Update remember-core dependency from 0.19.2 to 0.19.3
+
+## [0.1.0] - 2026-03-02
+
+### Added
+- Initial project scaffold with TypeScript, ESM modules, and build configuration
+- ConfigService with environment validation and typed accessors
+- Entry point (src/index.ts) that orchestrates RemService execution
+- Docker multi-stage build (191MB image size)
+- Cloud Build configs for e1 and production environments
+- Deploy script (scripts/deploy.ts) for automated GCP deployment
+- Verify script (scripts/verify.ts) for E2E validation
+- Unit tests for ConfigService and entry point contracts
+- Complete M1 milestone: Cloud Run Job wrapper ready for deployment
+
+### Documentation
+- Design documents for REM background relationships and GCP execution environment
+- Task breakdown for all 6 tasks in M1 milestone
+- Progress tracking in agent/progress.yaml

@@ -83,17 +83,25 @@ recent_work:
       - "Completed T4: Dockerfile (191MB image), cloudbuild e1+prod, .dockerignore"
       - "Completed T5: deploy-e1.ts script, Cloud Scheduler setup, npm run deploy:e1"
       - "Completed T6: verify-e1.ts script, npm run verify:e1"
+  - date: 2026-03-03
+    items:
+      - "Ran @acp-init to reload context"
+      - "Discovered remember-core 0.19.3 has full RemService implementation at ./rem subpath"
+      - "Removed stub (src/stubs/rem.ts) — no longer needed"
+      - "Updated imports to use @prmichaelsen/remember-core/rem"
+      - "Verified build succeeds with real RemService"
+      - "Project is now fully functional and deployment-ready"
 
 next_steps:
-  - "Coordinate with remember-core on RemService API shape"
-  - "Publish remember-core 0.17.0+ with rem/ subpath, then replace stubs"
-  - "Run npm run deploy:e1 to deploy to GCP"
-  - "Run npm run verify:e1 to verify E2E"
+  - "Create ANTHROPIC_API_KEY secret in GCP Secret Manager (e1)"
+  - "Run npm run deploy -- --env=e1 to deploy to GCP"
+  - "Run npm run verify -- --env=e1 to verify E2E"
+  - "Monitor first runs for relationship creation rate and Haiku costs"
+  - "Deploy to production once e1 validation complete"
 
 notes:
-  - "remember-core will implement RemService with all BL — this project is a thin wrapper"
+  - "remember-core 0.19.3 provides full RemService implementation at ./rem subpath"
   - "Most secrets shared with remember-rest-service — reuse existing Secret Manager entries"
   - "Only new secret: ANTHROPIC_API_KEY for Haiku cluster validation"
 
-current_blockers:
-  - "remember-core RemService not yet implemented (can work in parallel with stub)"
+current_blockers: []

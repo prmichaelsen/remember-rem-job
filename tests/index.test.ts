@@ -1,68 +1,41 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 
 /**
- * Entry point tests.
+ * Entry point contract tests.
  *
- * Since src/index.ts is a top-level script (calls main() immediately),
- * we test the wiring indirectly by validating:
- * 1. ConfigService integration (already tested in config.service.test.ts)
- * 2. Stub RemService returns expected shape
- * 3. createHaikuClient produces a valid client
- * 4. RemStateStore has expected methods
+ * These tests validate that the remember-core/rem exports are accessible
+ * and have the expected shape. Actual integration testing happens in E2E tests
+ * (npm run verify) which run against real GCP infrastructure.
  */
 
 import {
   RemService,
   RemStateStore,
   createHaikuClient,
+  createMockHaikuClient,
   type RunCycleResult,
-} from '../src/stubs/rem.js';
+  type RemServiceDeps,
+} from '@prmichaelsen/remember-core/rem';
 
-describe('RemService stub', () => {
-  it('runCycle returns empty result', async () => {
-    const service = new RemService({
-      weaviateClient: {} as any,
-      relationshipServiceFactory: () => ({}) as any,
-      stateStore: new RemStateStore(),
-      haikuClient: createHaikuClient({ apiKey: 'test' }),
-    });
-
-    const result = await service.runCycle();
-
-    expect(result.collection_id).toBeNull();
-    expect(result.memories_scanned).toBe(0);
-    expect(result.clusters_found).toBe(0);
-    expect(result.relationships_created).toBe(0);
-    expect(result.relationships_merged).toBe(0);
-    expect(result.relationships_split).toBe(0);
-    expect(result.skipped_by_haiku).toBe(0);
-    expect(result.duration_ms).toBe(0);
+describe('RemService contract', () => {
+  it('exports RemService class', () => {
+    expect(RemService).toBeDefined();
+    expect(typeof RemService).toBe('function');
   });
 
-  it('accepts optional config and logger', async () => {
-    const logger = {
-      info: vi.fn(),
-      warn: vi.fn(),
-      error: vi.fn(),
-      debug: vi.fn(),
-    };
-
-    const service = new RemService({
+  it('RemServiceDeps has required fields', () => {
+    // Type check only - no runtime validation needed
+    const deps: RemServiceDeps = {
       weaviateClient: {} as any,
       relationshipServiceFactory: () => ({}) as any,
       stateStore: new RemStateStore(),
-      haikuClient: createHaikuClient({ apiKey: 'test' }),
-      config: { max_candidates_per_run: 100 },
-      logger,
-    });
-
-    await service.runCycle();
-    expect(logger.info).toHaveBeenCalled();
-    expect(logger.warn).toHaveBeenCalled();
+      haikuClient: createMockHaikuClient(),
+    };
+    expect(deps).toBeDefined();
   });
 });
 
-describe('RunCycleResult shape', () => {
+describe('RunCycleResult contract', () => {
   it('has all expected fields', () => {
     const result: RunCycleResult = {
       collection_id: 'Memory_users_abc',
@@ -78,17 +51,52 @@ describe('RunCycleResult shape', () => {
     expect(result).toBeDefined();
     expect(typeof result.collection_id).toBe('string');
     expect(typeof result.memories_scanned).toBe('number');
+    expect(typeof result.clusters_found).toBe('number');
+    expect(typeof result.relationships_created).toBe('number');
+    expect(typeof result.relationships_merged).toBe('number');
+    expect(typeof result.relationships_split).toBe('number');
+    expect(typeof result.skipped_by_haiku).toBe('number');
+    expect(typeof result.duration_ms).toBe('number');
+  });
+
+  it('allows null collection_id', () => {
+    const result: RunCycleResult = {
+      collection_id: null,
+      memories_scanned: 0,
+      clusters_found: 0,
+      relationships_created: 0,
+      relationships_merged: 0,
+      relationships_split: 0,
+      skipped_by_haiku: 0,
+      duration_ms: 0,
+    };
+    expect(result.collection_id).toBeNull();
   });
 });
 
-describe('createHaikuClient', () => {
+describe('createHaikuClient contract', () => {
   it('returns client with validateCluster method', () => {
     const client = createHaikuClient({ apiKey: 'sk-test' });
     expect(typeof client.validateCluster).toBe('function');
   });
+
+  it('mock client has same interface', async () => {
+    const mockClient = createMockHaikuClient();
+    expect(typeof mockClient.validateCluster).toBe('function');
+
+    const result = await mockClient.validateCluster({
+      memories: [
+        { id: '1', content_summary: 'test', tags: [] },
+        { id: '2', content_summary: 'test2', tags: [] },
+      ],
+    });
+
+    expect(result.valid).toBeDefined();
+    expect(typeof result.valid).toBe('boolean');
+  });
 });
 
-describe('RemStateStore', () => {
+describe('RemStateStore contract', () => {
   it('has expected methods', () => {
     const store = new RemStateStore();
     expect(typeof store.getCursor).toBe('function');
