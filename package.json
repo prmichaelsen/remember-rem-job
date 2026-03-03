@@ -1,6 +1,6 @@
 {
   "name": "remember-rem-job",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Cloud Run Job wrapper for remember-core RemService — discovers and creates relationships between memories",
   "private": true,
   "type": "module",

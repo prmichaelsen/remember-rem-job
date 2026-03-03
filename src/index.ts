@@ -53,27 +53,73 @@ async function main(): Promise<void> {
   const relationshipServiceFactory = (collection: any, userId: string) =>
     new RelationshipService(collection, userId, logger);
 
-  // 5. Create RemService and run cycle
+  // 5. Create RemService
   const remService = new RemService({
     weaviateClient,
     relationshipServiceFactory,
     stateStore,
     haikuClient,
     logger,
+    config: {
+      max_candidates_per_run: 5000, // Large batch size increases odds of finding related memories
+    },
   });
 
-  const result = await remService.runCycle();
+  // 6. Run 30 cycles per Cloud Run execution
+  const cycles = 30;
+  const aggregateStats = {
+    collections_processed: new Set<string>(),
+    memories_scanned: 0,
+    clusters_found: 0,
+    relationships_created: 0,
+    relationships_merged: 0,
+    relationships_split: 0,
+    skipped_by_haiku: 0,
+    total_duration_ms: 0,
+  };
 
-  // 6. Log results
-  logger.info('REM cycle complete', {
-    collection: result.collection_id ?? 'none',
-    memoriesScanned: result.memories_scanned,
-    clustersFound: result.clusters_found,
-    relationshipsCreated: result.relationships_created,
-    relationshipsMerged: result.relationships_merged,
-    relationshipsSplit: result.relationships_split,
-    skippedByHaiku: result.skipped_by_haiku,
-    durationMs: result.duration_ms,
+  logger.info('Starting REM batch', { cycles });
+
+  for (let i = 0; i < cycles; i++) {
+    const result = await remService.runCycle();
+
+    if (result.collection_id) {
+      aggregateStats.collections_processed.add(result.collection_id);
+    }
+    aggregateStats.memories_scanned += result.memories_scanned;
+    aggregateStats.clusters_found += result.clusters_found;
+    aggregateStats.relationships_created += result.relationships_created;
+    aggregateStats.relationships_merged += result.relationships_merged;
+    aggregateStats.relationships_split += result.relationships_split;
+    aggregateStats.skipped_by_haiku += result.skipped_by_haiku;
+    aggregateStats.total_duration_ms += result.duration_ms;
+
+    logger.debug('REM cycle completed', {
+      cycle: i + 1,
+      collection: result.collection_id ?? 'none',
+      memoriesScanned: result.memories_scanned,
+      clustersFound: result.clusters_found,
+    });
+
+    // Early exit if no collection to process
+    if (!result.collection_id) {
+      logger.info('No more collections to process, stopping early', { cycle: i + 1 });
+      break;
+    }
+  }
+
+  // 7. Log aggregate results
+  logger.info('REM batch complete', {
+    cycles_executed: cycles,
+    collections_processed: Array.from(aggregateStats.collections_processed),
+    memoriesScanned: aggregateStats.memories_scanned,
+    clustersFound: aggregateStats.clusters_found,
+    relationshipsCreated: aggregateStats.relationships_created,
+    relationshipsMerged: aggregateStats.relationships_merged,
+    relationshipsSplit: aggregateStats.relationships_split,
+    skippedByHaiku: aggregateStats.skipped_by_haiku,
+    totalDurationMs: aggregateStats.total_duration_ms,
+    avgDurationPerCycleMs: Math.round(aggregateStats.total_duration_ms / cycles),
   });
 }
 

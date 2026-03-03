@@ -11,7 +11,13 @@
       "Bash(npx vitest:*)",
       "Bash(docker build:*)",
       "Bash(docker images:*)",
-      "Bash(gcloud secrets:*)"
+      "Bash(gcloud secrets:*)",
+      "Bash(ls:*)",
+      "Bash(npm run:*)",
+      "Bash(/tmp/check-weaviate-api.js:*)",
+      "Bash(npm link:*)",
+      "Bash(grep:*)",
+      "Bash(/tmp/test-env-load.mjs:*)"
     ]
   }
 }

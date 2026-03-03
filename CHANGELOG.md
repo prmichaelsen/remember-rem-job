@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-03-03
+
+### Changed
+- **Batch size**: Increase to 5000 candidates per cycle (from 30) in both prod and local testing — larger batches increase odds of finding related memories within a single clustering pass
+- **Production**: Run 30 cycles per Cloud Run execution (processes up to ~150k memories per hourly trigger)
+- Add aggregate statistics logging across all cycles in production
+
+### Added
+- Local test script (scripts/test-local.ts) with dotenv support for testing REM locally without deployment
+- Support for custom environment files via `--env-file` flag
+- Support for loading Firebase credentials from `./remember-prod-service.json` file
+- Diagnostic script (scripts/diagnose-cursor.ts) for inspecting REM state
+
+### Fixed
+- Update to @prmichaelsen/remember-core@0.19.7 (fixes Weaviate sort parameter format)
+
 ## [0.2.0] - 2026-03-03
 
 ### Changed
