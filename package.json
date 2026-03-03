@@ -15,7 +15,8 @@
     "fetch-secrets:e1": "tsx scripts/fetch-e1-secrets.ts",
     "deploy": "tsx scripts/deploy.ts",
     "verify": "tsx scripts/verify.ts",
-    "diagnose": "tsx scripts/diagnose-cursor.ts"
+    "diagnose": "tsx scripts/diagnose-cursor.ts",
+    "test:local": "tsx scripts/test-local.ts"
   },
   "engines": {
     "node": ">=22.0.0"
@@ -31,10 +32,11 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@prmichaelsen/remember-core": "^0.19.5"
+    "@prmichaelsen/remember-core": "^0.19.6"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",
+    "dotenv": "^16.4.5",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
