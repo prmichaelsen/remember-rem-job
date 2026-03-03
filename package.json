@@ -32,7 +32,7 @@
   "license": "MIT",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
-    "@prmichaelsen/remember-core": "^0.19.9"
+    "@prmichaelsen/remember-core": "^0.19.10"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",
