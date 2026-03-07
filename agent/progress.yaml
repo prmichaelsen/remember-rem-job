@@ -30,7 +30,7 @@ milestones:
     name: Full REM Phase Wiring
     status: not_started
     tasks_total: 5
-    tasks_completed: 0
+    tasks_completed: 1
     estimated_weeks: 1-2
     file: agent/milestones/milestone-3-full-rem-phase-wiring.md
 
@@ -106,8 +106,9 @@ tasks:
   milestone_3:
     - id: T12
       name: Wire Phase 0-7 Dependencies
-      status: not_started
+      status: completed
       estimated_hours: 2-3
+      completed_date: 2026-03-07
       file: agent/tasks/milestone-3-full-rem-phase-wiring/task-12-wire-phase-0-7-deps.md
     - id: T13
       name: Ghost Composite ID Discovery

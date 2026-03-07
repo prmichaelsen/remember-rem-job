@@ -21,6 +21,10 @@ import {
 } from '@prmichaelsen/remember-core/rem';
 import {
   JobService,
+  createAnthropicSubLlm,
+  EmotionalScoringService,
+  ScoringContextService,
+  ClassificationService,
 } from '@prmichaelsen/remember-core/services';
 import { runScheduler } from './scheduler.js';
 import { runWorker } from './worker.js';
@@ -66,6 +70,16 @@ async function main(): Promise<void> {
   const relationshipServiceFactory = (collection: any, userId: string) =>
     new RelationshipService(collection, userId, logger);
 
+  // Sub-LLM for phases 4, 5, 6, 7, 9, 10
+  const subLlm = createAnthropicSubLlm({ apiKey: config.anthropicConfig.apiKey });
+
+  // Phase 0: Emotional scoring
+  const emotionalScoringService = new EmotionalScoringService({ subLlm, logger });
+  const scoringContextService = new ScoringContextService({ logger });
+
+  // Phase 7: Classification
+  const classificationService = new ClassificationService();
+
   const remService = new RemService({
     weaviateClient,
     relationshipServiceFactory,
@@ -75,6 +89,10 @@ async function main(): Promise<void> {
     config: {
       max_candidates_per_run: 5000,
     },
+    subLlm,
+    emotionalScoringService,
+    scoringContextService,
+    classificationService,
   });
 
   switch (config.appConfig.remMode) {
