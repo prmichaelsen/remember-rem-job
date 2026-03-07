@@ -20,9 +20,9 @@ milestones:
 
   - id: M2
     name: Fan-Out Job Architecture
-    status: in_progress
+    status: completed
     tasks_total: 5
-    tasks_completed: 4
+    tasks_completed: 5
     estimated_weeks: 1-2
     file: agent/milestones/milestone-2-fan-out-job-architecture.md
 
@@ -90,7 +90,7 @@ tasks:
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-10-infra-deploy-updates.md
     - id: T11
       name: Testing & E2E Verification
-      status: not_started
+      status: completed
       estimated_hours: 2-3
       dependencies: [T10]
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-11-testing-e2e.md
@@ -103,8 +103,8 @@ documentation:
 
 progress:
   planning: 100
-  implementation: 60
-  overall: 64
+  implementation: 100
+  overall: 100
 
 recent_work:
   - date: 2026-03-02
@@ -139,12 +139,14 @@ recent_work:
       - "Completed T8: Scheduler mode — collection enumeration, job creation, Cloud Run Admin API fan-out"
       - "Completed T9: Worker mode — RemJobWorker integration with JOB_ID pickup"
       - "Completed T10: Infra updates — dual Cloud Run Jobs, daily cron, .env.example, deploy script"
+      - "Completed T11: Testing — 22 unit tests passing, test-local.ts supports scheduler/worker modes"
+      - "M2 complete: Fan-Out Job Architecture fully implemented"
 
 next_steps:
-  - "T8: Implement scheduler mode with scheduleRemJobs + Cloud Run Admin API fan-out"
-  - "T9: Implement worker mode with RemJobWorker integration"
-  - "T10: Update Cloud Scheduler to daily, deploy scripts, IAM"
-  - "T11: Test and verify E2E on e1"
+  - "Deploy to e1: npm run deploy -- --execute"
+  - "Verify E2E: check Cloud Logging for scheduler + worker logs"
+  - "Set IAM: gcloud run jobs add-iam-policy-binding remember-rem-worker ..."
+  - "Monitor first daily run for relationship creation and costs"
 
 notes:
   - "remember-core 0.19.3 provides full RemService implementation at ./rem subpath"

@@ -2,6 +2,8 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { ConfigService } from '../src/config/config.service.js';
 
 const REQUIRED_ENV = {
+  REM_MODE: 'worker',
+  JOB_ID: 'test-job-id',
   WEAVIATE_REST_URL: 'http://localhost:8080',
   WEAVIATE_GRPC_URL: 'http://localhost:50051',
   WEAVIATE_API_KEY: 'test-weaviate-key',

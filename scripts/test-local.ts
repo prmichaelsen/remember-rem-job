@@ -1,41 +1,55 @@
 /**
  * Local REM test script.
  *
- * Runs RemService.runCycle() locally with production secrets for debugging.
- * Much faster than deploying to Cloud Run for every test iteration.
+ * Supports both scheduler and worker modes for local testing.
  *
  * Prerequisites:
  * 1. Fetch secrets: npm run fetch-secrets:e1
  * 2. Run this script: npm run test:local
  *
  * Usage:
- *   npx tsx scripts/test-local.ts
- *   npx tsx scripts/test-local.ts --env=prod          # use .env.prod.local
- *   npx tsx scripts/test-local.ts --env-file=.env.prod.local  # custom path
+ *   npx tsx scripts/test-local.ts                           # legacy: run single REM cycle
+ *   npx tsx scripts/test-local.ts --mode=scheduler          # test scheduler (create jobs, skip API triggers)
+ *   npx tsx scripts/test-local.ts --mode=worker --job-id=X  # test worker for a specific job
+ *   npx tsx scripts/test-local.ts --env=prod                # use .env.prod.local
+ *   npx tsx scripts/test-local.ts --env-file=.env.prod.local
+ *
+ * REM Config Options (legacy/worker mode):
+ *   --batch=30                # Max candidates per run (default: 30)
+ *   --auto-approve=0.85       # Auto-approve similarity threshold (0.0-1.0, default: 0.9)
+ *   --similarity=0.70         # Base similarity threshold (0.0-1.0, default: 0.75)
+ *   --seed-count=3            # LLM-enhanced seed count (default: 2)
  */
 
 import { config as loadEnv } from 'dotenv';
 import { existsSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { ConfigService } from '../src/config/config.service.js';
 
 // Parse flags
 const args = process.argv.slice(2);
 const envFileArg = args.find(arg => arg.startsWith('--env-file='));
 const envArg = args.find(arg => arg.startsWith('--env='));
+const modeArg = args.find(arg => arg.startsWith('--mode='));
+const jobIdArg = args.find(arg => arg.startsWith('--job-id='));
 const batchArg = args.find(arg => arg.startsWith('--batch='));
+const autoApproveArg = args.find(arg => arg.startsWith('--auto-approve='));
+const similarityArg = args.find(arg => arg.startsWith('--similarity='));
+const seedCountArg = args.find(arg => arg.startsWith('--seed-count='));
+
+const mode = modeArg ? modeArg.split('=')[1] : 'legacy';
 
 // Determine env file path
 let envFile: string;
 let envPath: string;
 let batch: number = 30;
+let autoApprove: number | undefined = undefined;
+let similarity: number | undefined = undefined;
+let seedCount: number | undefined = undefined;
 
 if (envFileArg) {
-  // Custom file path
   envFile = envFileArg.split('=')[1];
   envPath = resolve(process.cwd(), envFile);
 } else {
-  // Default pattern: .env.{env}.local
   const env = envArg ? envArg.split('=')[1] : 'e1';
   envFile = `.env.${env}.local`;
   envPath = resolve(process.cwd(), envFile);
@@ -51,14 +65,16 @@ if (!existsSync(envPath)) {
 }
 
 if (batchArg) {
-  try {
-    const batchValue = batchArg.split('=')[1];
-    batch = parseInt(batchValue, 10);
-  } catch (e) {
-    console.error("\bBatch not a number");
-    process.exit(1);
-  }
-
+  batch = parseInt(batchArg.split('=')[1], 10);
+}
+if (autoApproveArg) {
+  autoApprove = parseFloat(autoApproveArg.split('=')[1]);
+}
+if (similarityArg) {
+  similarity = parseFloat(similarityArg.split('=')[1]);
+}
+if (seedCountArg) {
+  seedCount = parseInt(seedCountArg.split('=')[1], 10);
 }
 
 console.log(`\n📂 Loading environment from: ${envFile}`);
@@ -67,7 +83,32 @@ if (result.error) {
   console.error(`\n❌ Failed to load ${envFile}:`, result.error);
   process.exit(1);
 }
+
+// Set REM_MODE for ConfigService based on test mode
+if (mode === 'scheduler') {
+  process.env.REM_MODE = 'scheduler';
+  process.env.GCP_PROJECT_ID = process.env.GCP_PROJECT_ID || 'com-f5-parm';
+  process.env.GCP_REGION = process.env.GCP_REGION || 'us-central1';
+  process.env.WORKER_JOB_NAME = process.env.WORKER_JOB_NAME || 'remember-rem-worker';
+} else if (mode === 'worker') {
+  process.env.REM_MODE = 'worker';
+  if (jobIdArg) {
+    process.env.JOB_ID = jobIdArg.split('=')[1];
+  }
+  if (!process.env.JOB_ID) {
+    console.error('\n❌ --job-id=XXX required for worker mode');
+    process.exit(1);
+  }
+} else {
+  // Legacy mode: set REM_MODE=worker with a dummy JOB_ID to pass validation,
+  // but we'll skip RemJobWorker and call RemService directly
+  process.env.REM_MODE = 'worker';
+  process.env.JOB_ID = 'local-test';
+}
+
 console.log('   ✓ Environment loaded\n');
+
+import { ConfigService } from '../src/config/config.service.js';
 import {
   initWeaviateClient,
   getWeaviateClient,
@@ -80,45 +121,40 @@ import {
   RemStateStore,
   createHaikuClient,
 } from '@prmichaelsen/remember-core/rem';
+import { JobService } from '@prmichaelsen/remember-core/services';
+import { runScheduler } from '../src/scheduler.js';
+import { runWorker } from '../src/worker.js';
 
 async function main(): Promise<void> {
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-  console.log('🧪 REM Local Test');
+  console.log(`🧪 REM Local Test (${mode} mode)`);
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-  // 1. Load config (fail-fast on missing env vars)
-  console.log('1. Loading configuration...');
   const config = new ConfigService();
   const logger = createLogger(config.appConfig.logLevel as LogLevel);
 
   console.log(`   NODE_ENV: ${config.appConfig.nodeEnv}`);
   console.log(`   LOG_LEVEL: ${config.appConfig.logLevel}`);
+  console.log(`   REM_MODE: ${config.appConfig.remMode}`);
   console.log(`   WEAVIATE_REST_URL: ${config.weaviateConfig.restUrl}`);
   console.log(`   FIREBASE_PROJECT_ID: ${config.firebaseConfig.projectId}`);
   console.log('   ✓ Config loaded\n');
 
-  // 2. Initialize Weaviate
-  console.log('2. Initializing Weaviate...');
+  // Initialize infrastructure
   await initWeaviateClient({
     url: config.weaviateConfig.restUrl,
     apiKey: config.weaviateConfig.apiKey,
+    openaiApiKey: config.embeddingsConfig.apiKey,
   });
   const weaviateClient = getWeaviateClient();
-  console.log('   ✓ Weaviate client initialized\n');
+  console.log('   ✓ Weaviate client initialized');
 
-  // 3. Initialize Firestore
-  console.log('3. Initializing Firestore...');
-
-  // Check if we have a local service account file
   const serviceAccountPath = resolve(process.cwd(), './remember-prod-service.json');
   let serviceAccount: string;
-
   if (existsSync(serviceAccountPath)) {
-    console.log(`   Using service account from: ./remember-prod-service.json`);
     const fs = await import('node:fs/promises');
     serviceAccount = await fs.readFile(serviceAccountPath, 'utf-8');
   } else {
-    console.log(`   Using service account from env var`);
     serviceAccount = config.firebaseConfig.serviceAccountKey;
   }
 
@@ -128,15 +164,76 @@ async function main(): Promise<void> {
   });
   console.log('   ✓ Firestore initialized\n');
 
-  // 4. Create RemService dependencies
-  console.log('4. Creating RemService...');
-  const stateStore = new RemStateStore();
-  const haikuClient = createHaikuClient({
-    apiKey: config.anthropicConfig.apiKey,
-  });
+  const jobService = new JobService({ logger });
 
+  if (mode === 'scheduler') {
+    console.log('Running scheduler mode (jobs created but workers NOT triggered locally)...\n');
+    // Override runScheduler to skip Cloud Run API calls
+    // We'll just enumerate and create jobs
+    const { scheduleRemJobs } = await import('@prmichaelsen/remember-core/services');
+
+    async function* enumerateCollections() {
+      const allCollections = await weaviateClient.collections.listAll();
+      for (const collection of allCollections) {
+        if (!collection.name.startsWith('Memory_')) continue;
+        const col = weaviateClient.collections.get(collection.name);
+        const { totalCount } = await col.aggregate.overAll();
+        if (totalCount < 50) {
+          console.log(`   Skipping ${collection.name} (${totalCount} memories)`);
+          continue;
+        }
+        console.log(`   Eligible: ${collection.name} (${totalCount} memories)`);
+        yield collection.name;
+      }
+    }
+
+    const { jobs_created } = await scheduleRemJobs(
+      jobService,
+      enumerateCollections,
+      logger,
+    );
+
+    console.log(`\n✅ Created ${jobs_created} job records in Firestore`);
+    console.log('   Workers NOT triggered (local mode — use --mode=worker --job-id=XXX to test a specific job)');
+    return;
+  }
+
+  if (mode === 'worker') {
+    const stateStore = new RemStateStore();
+    const haikuClient = createHaikuClient({ apiKey: config.anthropicConfig.apiKey });
+    const relationshipServiceFactory = (collection: any, userId: string) =>
+      new RelationshipService(collection, userId, logger);
+
+    const remService = new RemService({
+      weaviateClient,
+      relationshipServiceFactory,
+      stateStore,
+      haikuClient,
+      logger,
+      config: {
+        max_candidates_per_run: batch,
+        ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
+        ...(similarity !== undefined && { similarity_threshold: similarity }),
+        ...(seedCount !== undefined && { seed_count: seedCount }),
+      },
+    });
+
+    await runWorker({ config, jobService, remService, logger });
+    return;
+  }
+
+  // Legacy mode: direct RemService.runCycle()
+  const stateStore = new RemStateStore();
+  const haikuClient = createHaikuClient({ apiKey: config.anthropicConfig.apiKey });
   const relationshipServiceFactory = (collection: any, userId: string) =>
     new RelationshipService(collection, userId, logger);
+
+  const remConfig = {
+    max_candidates_per_run: batch,
+    ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
+    ...(similarity !== undefined && { similarity_threshold: similarity }),
+    ...(seedCount !== undefined && { seed_count: seedCount }),
+  };
 
   const remService = new RemService({
     weaviateClient,
@@ -144,53 +241,44 @@ async function main(): Promise<void> {
     stateStore,
     haikuClient,
     logger,
-    config: {
-      max_candidates_per_run: batch,
-    },
+    config: remConfig,
   });
-  console.log('   ✓ RemService created\n');
 
-  // 5. Run cycle
-  console.log('5. Running REM cycle...\n');
+  console.log('   REM Config:');
+  console.log(`     max_candidates_per_run: ${batch}`);
+  console.log(`     similarity_threshold: ${similarity ?? '0.75 (default)'}`);
+  console.log(`     auto_approve_similarity: ${autoApprove ?? '0.9 (default)'}`);
+  console.log(`     seed_count: ${seedCount ?? '2 (default)'}`);
+  console.log('');
+
+  console.log('Running REM cycle...\n');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   const startTime = Date.now();
-  const result = await remService.runCycle();
+  const cycleResult = await remService.runCycle();
   const duration = Date.now() - startTime;
 
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
   console.log('📊 REM Cycle Results');
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
-  console.log(`Collection:              ${result.collection_id ?? '(none)'}`);
-  console.log(`Memories Scanned:        ${result.memories_scanned}`);
-  console.log(`Clusters Found:          ${result.clusters_found}`);
-  console.log(`Relationships Created:   ${result.relationships_created}`);
-  console.log(`Relationships Merged:    ${result.relationships_merged}`);
-  console.log(`Relationships Split:     ${result.relationships_split}`);
-  console.log(`Skipped by Haiku:        ${result.skipped_by_haiku}`);
-  console.log(`Duration (ms):           ${result.duration_ms}`);
-  console.log(`Duration (seconds):      ${Math.round(result.duration_ms / 1000)}`);
+  console.log(`Collection:              ${cycleResult.collection_id ?? '(none)'}`);
+  console.log(`Memories Scanned:        ${cycleResult.memories_scanned}`);
+  console.log(`Clusters Found:          ${cycleResult.clusters_found}`);
+  console.log(`Relationships Created:   ${cycleResult.relationships_created}`);
+  console.log(`Relationships Merged:    ${cycleResult.relationships_merged}`);
+  console.log(`Relationships Split:     ${cycleResult.relationships_split}`);
+  console.log(`Skipped by Haiku:        ${cycleResult.skipped_by_haiku}`);
+  console.log(`Duration (ms):           ${cycleResult.duration_ms}`);
   console.log(`Total Time:              ${duration}ms\n`);
 
-  // 6. Summary
-  if (!result.collection_id) {
-    console.log('⚠️  No collections to process');
-    console.log('   Run npm run diagnose to check collection registry\n');
-  } else if (result.memories_scanned === 0) {
-    console.log('⚠️  No memories scanned');
-    console.log('   Collection may be empty or below minimum size\n');
-  } else if (result.clusters_found === 0) {
-    console.log('ℹ️  No clusters found');
-    console.log('   No similar memories detected in this batch\n');
-  } else if (result.relationships_created === 0 && result.relationships_merged === 0) {
-    console.log('⚠️  Clusters found but no relationships created');
-    console.log('   All clusters may have been rejected by Haiku\n');
-  } else {
+  if (cycleResult.relationships_created > 0 || cycleResult.relationships_merged > 0) {
     console.log('✅ REM cycle completed successfully\n');
+  } else if (cycleResult.clusters_found === 0) {
+    console.log('ℹ️  No clusters found in this batch\n');
+  } else {
+    console.log('⚠️  Clusters found but no relationships created\n');
   }
-
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 }
 
 main()
@@ -200,7 +288,6 @@ main()
   })
   .catch((err) => {
     console.error('\n❌ Test failed:', err);
-    console.error('\nStack trace:');
     console.error(err.stack);
     process.exit(1);
   });
