@@ -26,6 +26,14 @@ milestones:
     estimated_weeks: 1-2
     file: agent/milestones/milestone-2-fan-out-job-architecture.md
 
+  - id: M3
+    name: Full REM Phase Wiring
+    status: not_started
+    tasks_total: 5
+    tasks_completed: 0
+    estimated_weeks: 1-2
+    file: agent/milestones/milestone-3-full-rem-phase-wiring.md
+
 tasks:
   milestone_1:
     - id: T1
@@ -95,16 +103,47 @@ tasks:
       dependencies: [T10]
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-11-testing-e2e.md
 
+  milestone_3:
+    - id: T12
+      name: Wire Phase 0-7 Dependencies
+      status: not_started
+      estimated_hours: 2-3
+      file: agent/tasks/milestone-3-full-rem-phase-wiring/task-12-wire-phase-0-7-deps.md
+    - id: T13
+      name: Ghost Composite ID Discovery
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T12]
+      file: agent/tasks/milestone-3-full-rem-phase-wiring/task-13-ghost-composite-id-discovery.md
+    - id: T14
+      name: Per-Ghost REM Cycle Execution
+      status: not_started
+      estimated_hours: 3-4
+      dependencies: [T12, T13]
+      file: agent/tasks/milestone-3-full-rem-phase-wiring/task-14-per-ghost-rem-cycles.md
+    - id: T15
+      name: Wire Mood/Perception Dependencies
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T14]
+      file: agent/tasks/milestone-3-full-rem-phase-wiring/task-15-wire-mood-perception-deps.md
+    - id: T16
+      name: Update Tests and Deploy
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T12, T13, T14, T15]
+      file: agent/tasks/milestone-3-full-rem-phase-wiring/task-16-update-tests-deploy.md
+
 documentation:
-  design_documents: 2
-  milestone_documents: 2
+  design_documents: 3
+  milestone_documents: 3
   pattern_documents: 0
-  task_documents: 11
+  task_documents: 16
 
 progress:
   planning: 100
-  implementation: 100
-  overall: 100
+  implementation: 66
+  overall: 73
 
 recent_work:
   - date: 2026-03-02
@@ -141,16 +180,24 @@ recent_work:
       - "Completed T10: Infra updates — dual Cloud Run Jobs, daily cron, .env.example, deploy script"
       - "Completed T11: Testing — 22 unit tests passing, test-local.ts supports scheduler/worker modes"
       - "M2 complete: Fan-Out Job Architecture fully implemented"
+      - "Created ghost-scoped REM cycles design doc"
+      - "Created test-fanout.ts script for fan-out testing"
+      - "Planned M3: Full REM Phase Wiring (5 tasks, T12-T16)"
 
 next_steps:
-  - "Deploy to e1: npm run deploy -- --execute"
-  - "Verify E2E: check Cloud Logging for scheduler + worker logs"
-  - "Set IAM: gcloud run jobs add-iam-policy-binding remember-rem-worker ..."
-  - "Monitor first daily run for relationship creation and costs"
+  - "Wait for remember-core publish with new service exports + tag filter in runCycle()"
+  - "T12: Wire Phase 0-7 deps (subLlm, emotionalScoringService, scoringContextService, classificationService)"
+  - "T13: Implement ghost composite ID discovery from Firestore"
+  - "T14: Per-ghost tag-filtered REM cycle execution in worker"
+  - "T15: Wire MoodService + ghostCompositeId for Phases 8-10"
+  - "T16: Update test scripts, deploy, E2E verify"
 
 notes:
   - "remember-core 0.19.3 provides full RemService implementation at ./rem subpath"
   - "Most secrets shared with remember-rest-service — reuse existing Secret Manager entries"
   - "Only new secret: ANTHROPIC_API_KEY for Haiku cluster validation"
+  - "Ghost composite IDs are the ghost_owner:* tag values (personal, space, group patterns)"
+  - "Mood state assumed always backfilled — Firestore is source of truth for ghost discovery"
 
-current_blockers: []
+current_blockers:
+  - "remember-core publish with new service exports (EmotionalScoringService, ScoringContextService, ClassificationService, createAnthropicSubLlm) and tag filter support in runCycle()"
