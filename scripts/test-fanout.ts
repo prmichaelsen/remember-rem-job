@@ -80,9 +80,17 @@ import {
   RemStateStore,
   createHaikuClient,
 } from '@prmichaelsen/remember-core/rem';
-import { JobService } from '@prmichaelsen/remember-core/services';
-import { RemJobWorker } from '@prmichaelsen/remember-core/services';
+import {
+  JobService,
+  RemJobWorker,
+  createAnthropicSubLlm,
+  EmotionalScoringService,
+  ScoringContextService,
+  ClassificationService,
+  MoodService,
+} from '@prmichaelsen/remember-core/services';
 import type { RemJobParams } from '@prmichaelsen/remember-core/services';
+import { discoverGhostCompositeIds } from '../src/ghost-discovery.js';
 
 async function main(): Promise<void> {
   const mode = isLive ? 'LIVE' : 'DRY-RUN';
@@ -184,6 +192,21 @@ async function main(): Promise<void> {
 
   console.log(`\n  ${jobs.length} job(s) created in Firestore\n`);
 
+  // Ghost discovery (both dry-run and live)
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('  Ghost Discovery');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
+
+  for (const { collectionId } of jobs) {
+    const ghostIds = await discoverGhostCompositeIds(weaviateClient, collectionId, logger);
+    if (ghostIds.length > 0) {
+      console.log(`  ${collectionId}: ${ghostIds.length} ghost(s) — ${ghostIds.join(', ')}`);
+    } else {
+      console.log(`  ${collectionId}: no ghosts`);
+    }
+  }
+  console.log('');
+
   if (!isLive) {
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('  Step 3: Workers [SKIPPED - DRY-RUN]');
@@ -209,6 +232,18 @@ async function main(): Promise<void> {
   const haikuClient = createHaikuClient({ apiKey: config.anthropicConfig.apiKey });
   const relationshipServiceFactory = (collection: any, userId: string) =>
     new RelationshipService(collection, userId, logger);
+  const subLlm = createAnthropicSubLlm({ apiKey: config.anthropicConfig.apiKey });
+  const emotionalScoringService = new EmotionalScoringService({ subLlm, logger });
+  const scoringContextService = new ScoringContextService({ logger });
+  const classificationService = new ClassificationService();
+  const moodService = new MoodService();
+
+  const remConfig = {
+    max_candidates_per_run: batch,
+    ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
+    ...(similarity !== undefined && { similarity_threshold: similarity }),
+    ...(seedCount !== undefined && { seed_count: seedCount }),
+  };
 
   const remService = new RemService({
     weaviateClient,
@@ -216,12 +251,11 @@ async function main(): Promise<void> {
     stateStore,
     haikuClient,
     logger,
-    config: {
-      max_candidates_per_run: batch,
-      ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
-      ...(similarity !== undefined && { similarity_threshold: similarity }),
-      ...(seedCount !== undefined && { seed_count: seedCount }),
-    },
+    config: remConfig,
+    subLlm,
+    emotionalScoringService,
+    scoringContextService,
+    classificationService,
   });
 
   const results: Array<{

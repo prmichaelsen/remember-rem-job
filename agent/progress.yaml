@@ -28,9 +28,9 @@ milestones:
 
   - id: M3
     name: Full REM Phase Wiring
-    status: not_started
+    status: completed
     tasks_total: 5
-    tasks_completed: 2
+    tasks_completed: 5
     estimated_weeks: 1-2
     file: agent/milestones/milestone-3-full-rem-phase-wiring.md
 
@@ -119,19 +119,22 @@ tasks:
       file: agent/tasks/milestone-3-full-rem-phase-wiring/task-13-ghost-composite-id-discovery.md
     - id: T14
       name: Per-Ghost REM Cycle Execution
-      status: not_started
+      status: completed
+      completed_date: 2026-03-07
       estimated_hours: 3-4
       dependencies: [T12, T13]
       file: agent/tasks/milestone-3-full-rem-phase-wiring/task-14-per-ghost-rem-cycles.md
     - id: T15
       name: Wire Mood/Perception Dependencies
-      status: not_started
+      status: completed
+      completed_date: 2026-03-07
       estimated_hours: 2-3
       dependencies: [T14]
       file: agent/tasks/milestone-3-full-rem-phase-wiring/task-15-wire-mood-perception-deps.md
     - id: T16
       name: Update Tests and Deploy
-      status: not_started
+      status: completed
+      completed_date: 2026-03-07
       estimated_hours: 2-3
       dependencies: [T12, T13, T14, T15]
       file: agent/tasks/milestone-3-full-rem-phase-wiring/task-16-update-tests-deploy.md
@@ -144,8 +147,8 @@ documentation:
 
 progress:
   planning: 100
-  implementation: 66
-  overall: 73
+  implementation: 100
+  overall: 100
 
 recent_work:
   - date: 2026-03-02
@@ -187,12 +190,9 @@ recent_work:
       - "Planned M3: Full REM Phase Wiring (5 tasks, T12-T16)"
 
 next_steps:
-  - "Wait for remember-core publish with new service exports + tag filter in runCycle()"
-  - "T12: Wire Phase 0-7 deps (subLlm, emotionalScoringService, scoringContextService, classificationService)"
-  - "T13: Implement ghost composite ID discovery from Firestore"
-  - "T14: Per-ghost tag-filtered REM cycle execution in worker"
-  - "T15: Wire MoodService + ghostCompositeId for Phases 8-10"
-  - "T16: Update test scripts, deploy, E2E verify"
+  - "Deploy to e1 and verify E2E with Cloud Logging"
+  - "Monitor Haiku API costs during first live runs"
+  - "Run test-fanout in live mode against a test collection"
 
 notes:
   - "remember-core 0.19.3 provides full RemService implementation at ./rem subpath"
@@ -201,5 +201,4 @@ notes:
   - "Ghost composite IDs are the ghost_owner:* tag values (personal, space, group patterns)"
   - "Mood state assumed always backfilled — Firestore is source of truth for ghost discovery"
 
-current_blockers:
-  - "remember-core publish with new service exports (EmotionalScoringService, ScoringContextService, ClassificationService, createAnthropicSubLlm) and tag filter support in runCycle()"
+current_blockers: []

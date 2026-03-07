@@ -121,7 +121,14 @@ import {
   RemStateStore,
   createHaikuClient,
 } from '@prmichaelsen/remember-core/rem';
-import { JobService } from '@prmichaelsen/remember-core/services';
+import {
+  JobService,
+  createAnthropicSubLlm,
+  EmotionalScoringService,
+  ScoringContextService,
+  ClassificationService,
+  MoodService,
+} from '@prmichaelsen/remember-core/services';
 import { runScheduler } from '../src/scheduler.js';
 import { runWorker } from '../src/worker.js';
 
@@ -203,6 +210,18 @@ async function main(): Promise<void> {
     const haikuClient = createHaikuClient({ apiKey: config.anthropicConfig.apiKey });
     const relationshipServiceFactory = (collection: any, userId: string) =>
       new RelationshipService(collection, userId, logger);
+    const subLlm = createAnthropicSubLlm({ apiKey: config.anthropicConfig.apiKey });
+    const emotionalScoringService = new EmotionalScoringService({ subLlm, logger });
+    const scoringContextService = new ScoringContextService({ logger });
+    const classificationService = new ClassificationService();
+    const moodService = new MoodService();
+
+    const remConfig = {
+      max_candidates_per_run: batch,
+      ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
+      ...(similarity !== undefined && { similarity_threshold: similarity }),
+      ...(seedCount !== undefined && { seed_count: seedCount }),
+    };
 
     const remService = new RemService({
       weaviateClient,
@@ -210,15 +229,35 @@ async function main(): Promise<void> {
       stateStore,
       haikuClient,
       logger,
-      config: {
-        max_candidates_per_run: batch,
-        ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
-        ...(similarity !== undefined && { similarity_threshold: similarity }),
-        ...(seedCount !== undefined && { seed_count: seedCount }),
-      },
+      config: remConfig,
+      subLlm,
+      emotionalScoringService,
+      scoringContextService,
+      classificationService,
     });
 
-    await runWorker({ config, jobService, remService, logger });
+    await runWorker({
+      config,
+      jobService,
+      remService,
+      remServiceFactory: (ghostCompositeId: string) =>
+        new RemService({
+          weaviateClient,
+          relationshipServiceFactory,
+          stateStore,
+          haikuClient,
+          logger,
+          config: remConfig,
+          subLlm,
+          emotionalScoringService,
+          scoringContextService,
+          classificationService,
+          moodService,
+          ghostCompositeId,
+        }),
+      weaviateClient,
+      logger,
+    });
     return;
   }
 
@@ -227,6 +266,10 @@ async function main(): Promise<void> {
   const haikuClient = createHaikuClient({ apiKey: config.anthropicConfig.apiKey });
   const relationshipServiceFactory = (collection: any, userId: string) =>
     new RelationshipService(collection, userId, logger);
+  const subLlm = createAnthropicSubLlm({ apiKey: config.anthropicConfig.apiKey });
+  const emotionalScoringService = new EmotionalScoringService({ subLlm, logger });
+  const scoringContextService = new ScoringContextService({ logger });
+  const classificationService = new ClassificationService();
 
   const remConfig = {
     max_candidates_per_run: batch,
@@ -242,6 +285,10 @@ async function main(): Promise<void> {
     haikuClient,
     logger,
     config: remConfig,
+    subLlm,
+    emotionalScoringService,
+    scoringContextService,
+    classificationService,
   });
 
   console.log('   REM Config:');
