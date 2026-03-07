@@ -2,7 +2,7 @@ project:
   name: remember-rem-job
   version: 0.1.0
   started: 2026-03-02
-  status: completed
+  status: in_progress
   description: |
     Thin Cloud Run Job wrapper around remember-core's RemService.
     Triggered hourly by GCP Cloud Scheduler, calls RemService to discover
@@ -17,6 +17,14 @@ milestones:
     tasks_completed: 6
     estimated_weeks: 1-2
     file: agent/milestones/milestone-1-cloud-run-job.md
+
+  - id: M2
+    name: Fan-Out Job Architecture
+    status: not_started
+    tasks_total: 5
+    tasks_completed: 0
+    estimated_weeks: 1-2
+    file: agent/milestones/milestone-2-fan-out-job-architecture.md
 
 tasks:
   milestone_1:
@@ -56,16 +64,47 @@ tasks:
       dependencies: [T5]
       file: agent/tasks/milestone-1-cloud-run-job/task-6-e2e-verification.md
 
+  milestone_2:
+    - id: T7
+      name: Dual-Mode Entry Point
+      status: not_started
+      estimated_hours: 2-3
+      file: agent/tasks/milestone-2-fan-out-job-architecture/task-7-dual-mode-entry-point.md
+    - id: T8
+      name: Scheduler Mode Implementation
+      status: not_started
+      estimated_hours: 3-4
+      dependencies: [T7]
+      file: agent/tasks/milestone-2-fan-out-job-architecture/task-8-scheduler-mode.md
+    - id: T9
+      name: Worker Mode Implementation
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T7]
+      file: agent/tasks/milestone-2-fan-out-job-architecture/task-9-worker-mode.md
+    - id: T10
+      name: Infrastructure & Deploy Updates
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T8, T9]
+      file: agent/tasks/milestone-2-fan-out-job-architecture/task-10-infra-deploy-updates.md
+    - id: T11
+      name: Testing & E2E Verification
+      status: not_started
+      estimated_hours: 2-3
+      dependencies: [T10]
+      file: agent/tasks/milestone-2-fan-out-job-architecture/task-11-testing-e2e.md
+
 documentation:
   design_documents: 2
-  milestone_documents: 1
+  milestone_documents: 2
   pattern_documents: 0
-  task_documents: 6
+  task_documents: 11
 
 progress:
   planning: 100
-  implementation: 100
-  overall: 100
+  implementation: 50
+  overall: 55
 
 recent_work:
   - date: 2026-03-02
@@ -93,11 +132,11 @@ recent_work:
       - "Project is now fully functional and deployment-ready"
 
 next_steps:
-  - "Create ANTHROPIC_API_KEY secret in GCP Secret Manager (e1)"
-  - "Run npm run deploy -- --env=e1 to deploy to GCP"
-  - "Run npm run verify -- --env=e1 to verify E2E"
-  - "Monitor first runs for relationship creation rate and Haiku costs"
-  - "Deploy to production once e1 validation complete"
+  - "Start T7: Refactor src/index.ts to dual-mode entry point (scheduler|worker)"
+  - "T8: Implement scheduler mode with scheduleRemJobs + Cloud Run Admin API fan-out"
+  - "T9: Implement worker mode with RemJobWorker integration"
+  - "T10: Update Cloud Scheduler to daily, deploy scripts, IAM"
+  - "T11: Test and verify E2E on e1"
 
 notes:
   - "remember-core 0.19.3 provides full RemService implementation at ./rem subpath"
