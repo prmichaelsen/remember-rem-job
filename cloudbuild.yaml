@@ -20,20 +20,36 @@ steps:
       - 'push'
       - 'gcr.io/$PROJECT_ID/remember-rem-job:latest'
 
-  # Deploy as Cloud Run Job
+  # Deploy Scheduler Cloud Run Job
   - name: 'gcr.io/cloud-builders/gcloud'
     args:
       - 'run'
       - 'jobs'
       - 'deploy'
-      - 'remember-rem-job'
+      - 'remember-rem-scheduler'
       - '--image=gcr.io/$PROJECT_ID/remember-rem-job:$COMMIT_SHA'
       - '--region=us-central1'
       - '--memory=512Mi'
       - '--cpu=1'
-      - '--task-timeout=3000s'
+      - '--task-timeout=600s'
       - '--max-retries=0'
-      - '--set-env-vars=NODE_ENV=production'
+      - '--set-env-vars=NODE_ENV=production,REM_MODE=scheduler,GCP_PROJECT_ID=$PROJECT_ID,GCP_REGION=us-central1,WORKER_JOB_NAME=remember-rem-worker'
+      - '--update-secrets=WEAVIATE_REST_URL=remember-weaviate-rest-url:latest,WEAVIATE_GRPC_URL=remember-weaviate-grpc-url:latest,WEAVIATE_API_KEY=remember-weaviate-api-key:latest,FIREBASE_PROJECT_ID=remember-firebase-project-id:latest,FIREBASE_ADMIN_SERVICE_ACCOUNT_KEY=remember-firebase-admin-service-account-key:latest,EMBEDDINGS_PROVIDER=remember-embeddings-provider:latest,EMBEDDINGS_MODEL=remember-embeddings-model:latest,EMBEDDINGS_API_KEY=remember-openai-embeddings-api-key:latest,ANTHROPIC_API_KEY=remember-anthropic-key:latest'
+
+  # Deploy Worker Cloud Run Job
+  - name: 'gcr.io/cloud-builders/gcloud'
+    args:
+      - 'run'
+      - 'jobs'
+      - 'deploy'
+      - 'remember-rem-worker'
+      - '--image=gcr.io/$PROJECT_ID/remember-rem-job:$COMMIT_SHA'
+      - '--region=us-central1'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--task-timeout=3000s'
+      - '--max-retries=1'
+      - '--set-env-vars=NODE_ENV=production,REM_MODE=worker'
       - '--update-secrets=WEAVIATE_REST_URL=remember-weaviate-rest-url:latest,WEAVIATE_GRPC_URL=remember-weaviate-grpc-url:latest,WEAVIATE_API_KEY=remember-weaviate-api-key:latest,FIREBASE_PROJECT_ID=remember-firebase-project-id:latest,FIREBASE_ADMIN_SERVICE_ACCOUNT_KEY=remember-firebase-admin-service-account-key:latest,EMBEDDINGS_PROVIDER=remember-embeddings-provider:latest,EMBEDDINGS_MODEL=remember-embeddings-model:latest,EMBEDDINGS_API_KEY=remember-openai-embeddings-api-key:latest,ANTHROPIC_API_KEY=remember-anthropic-key:latest'
 
 images:

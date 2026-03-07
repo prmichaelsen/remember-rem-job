@@ -22,7 +22,7 @@ milestones:
     name: Fan-Out Job Architecture
     status: in_progress
     tasks_total: 5
-    tasks_completed: 3
+    tasks_completed: 4
     estimated_weeks: 1-2
     file: agent/milestones/milestone-2-fan-out-job-architecture.md
 
@@ -84,7 +84,7 @@ tasks:
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-9-worker-mode.md
     - id: T10
       name: Infrastructure & Deploy Updates
-      status: not_started
+      status: completed
       estimated_hours: 2-3
       dependencies: [T8, T9]
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-10-infra-deploy-updates.md
@@ -138,6 +138,7 @@ recent_work:
       - "Refactored src/index.ts with shared initInfrastructure, scheduler.ts, worker.ts stubs"
       - "Completed T8: Scheduler mode — collection enumeration, job creation, Cloud Run Admin API fan-out"
       - "Completed T9: Worker mode — RemJobWorker integration with JOB_ID pickup"
+      - "Completed T10: Infra updates — dual Cloud Run Jobs, daily cron, .env.example, deploy script"
 
 next_steps:
   - "T8: Implement scheduler mode with scheduleRemJobs + Cloud Run Admin API fan-out"
