@@ -22,7 +22,7 @@ milestones:
     name: Fan-Out Job Architecture
     status: in_progress
     tasks_total: 5
-    tasks_completed: 2
+    tasks_completed: 3
     estimated_weeks: 1-2
     file: agent/milestones/milestone-2-fan-out-job-architecture.md
 
@@ -78,7 +78,7 @@ tasks:
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-8-scheduler-mode.md
     - id: T9
       name: Worker Mode Implementation
-      status: not_started
+      status: completed
       estimated_hours: 2-3
       dependencies: [T7]
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-9-worker-mode.md
@@ -137,6 +137,7 @@ recent_work:
       - "Updated remember-core from 0.21.1 to 0.35.6 (JobService, RemJobWorker, scheduleRemJobs)"
       - "Refactored src/index.ts with shared initInfrastructure, scheduler.ts, worker.ts stubs"
       - "Completed T8: Scheduler mode — collection enumeration, job creation, Cloud Run Admin API fan-out"
+      - "Completed T9: Worker mode — RemJobWorker integration with JOB_ID pickup"
 
 next_steps:
   - "T8: Implement scheduler mode with scheduleRemJobs + Cloud Run Admin API fan-out"
