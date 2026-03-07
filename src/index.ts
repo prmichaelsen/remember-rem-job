@@ -104,6 +104,23 @@ async function main(): Promise<void> {
         config,
         jobService,
         remService,
+        remServiceFactory: (ghostCompositeId: string) =>
+          new RemService({
+            weaviateClient,
+            relationshipServiceFactory,
+            stateStore,
+            haikuClient,
+            logger,
+            config: {
+              max_candidates_per_run: 5000,
+            },
+            subLlm,
+            emotionalScoringService,
+            scoringContextService,
+            classificationService,
+            ghostCompositeId,
+          }),
+        weaviateClient,
         logger,
       });
       break;
