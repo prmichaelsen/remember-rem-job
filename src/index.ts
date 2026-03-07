@@ -21,8 +21,6 @@ import {
 } from '@prmichaelsen/remember-core/rem';
 import {
   JobService,
-  RemJobWorker,
-  scheduleRemJobs,
 } from '@prmichaelsen/remember-core/services';
 import { runScheduler } from './scheduler.js';
 import { runWorker } from './worker.js';
