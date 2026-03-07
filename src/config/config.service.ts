@@ -1,17 +1,25 @@
-import type { Config } from './config.types.js';
+import type { Config, RemMode } from './config.types.js';
 
 export class ConfigService {
   private readonly config: Config;
 
   constructor() {
     this.config = this.loadConfig();
+    this.validate();
   }
 
   private loadConfig(): Config {
+    const remMode = this.getRequired('REM_MODE') as RemMode;
+    if (remMode !== 'scheduler' && remMode !== 'worker') {
+      throw new Error(`Invalid REM_MODE: "${remMode}". Must be "scheduler" or "worker".`);
+    }
+
     return {
       app: {
         nodeEnv: this.get('NODE_ENV', 'development'),
         logLevel: this.get('LOG_LEVEL', 'info'),
+        remMode,
+        jobId: this.get('JOB_ID', '') || null,
       },
       weaviate: {
         restUrl: this.getRequired('WEAVIATE_REST_URL'),
@@ -30,7 +38,32 @@ export class ConfigService {
       anthropic: {
         apiKey: this.getRequired('ANTHROPIC_API_KEY'),
       },
+      gcp: {
+        projectId: this.get('GCP_PROJECT_ID', ''),
+        region: this.get('GCP_REGION', ''),
+        workerJobName: this.get('WORKER_JOB_NAME', ''),
+      },
     };
+  }
+
+  private validate(): void {
+    const { remMode, jobId } = this.config.app;
+
+    if (remMode === 'worker' && !jobId) {
+      throw new Error('JOB_ID is required when REM_MODE=worker');
+    }
+
+    if (remMode === 'scheduler') {
+      if (!this.config.gcp.projectId) {
+        throw new Error('GCP_PROJECT_ID is required when REM_MODE=scheduler');
+      }
+      if (!this.config.gcp.region) {
+        throw new Error('GCP_REGION is required when REM_MODE=scheduler');
+      }
+      if (!this.config.gcp.workerJobName) {
+        throw new Error('WORKER_JOB_NAME is required when REM_MODE=scheduler');
+      }
+    }
   }
 
   private get(key: string, defaultValue: string): string {
@@ -63,5 +96,9 @@ export class ConfigService {
 
   get anthropicConfig() {
     return this.config.anthropic;
+  }
+
+  get gcpConfig() {
+    return this.config.gcp;
   }
 }

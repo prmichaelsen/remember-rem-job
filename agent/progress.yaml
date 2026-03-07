@@ -20,9 +20,9 @@ milestones:
 
   - id: M2
     name: Fan-Out Job Architecture
-    status: not_started
+    status: in_progress
     tasks_total: 5
-    tasks_completed: 0
+    tasks_completed: 1
     estimated_weeks: 1-2
     file: agent/milestones/milestone-2-fan-out-job-architecture.md
 
@@ -67,7 +67,7 @@ tasks:
   milestone_2:
     - id: T7
       name: Dual-Mode Entry Point
-      status: not_started
+      status: completed
       estimated_hours: 2-3
       file: agent/tasks/milestone-2-fan-out-job-architecture/task-7-dual-mode-entry-point.md
     - id: T8
@@ -103,8 +103,8 @@ documentation:
 
 progress:
   planning: 100
-  implementation: 50
-  overall: 55
+  implementation: 60
+  overall: 64
 
 recent_work:
   - date: 2026-03-02
@@ -130,9 +130,14 @@ recent_work:
       - "Updated imports to use @prmichaelsen/remember-core/rem"
       - "Verified build succeeds with real RemService"
       - "Project is now fully functional and deployment-ready"
+  - date: 2026-03-07
+    items:
+      - "Planned M2: Fan-Out Job Architecture (5 tasks)"
+      - "Completed T7: Dual-mode entry point (REM_MODE=scheduler|worker)"
+      - "Updated remember-core from 0.21.1 to 0.35.6 (JobService, RemJobWorker, scheduleRemJobs)"
+      - "Refactored src/index.ts with shared initInfrastructure, scheduler.ts, worker.ts stubs"
 
 next_steps:
-  - "Start T7: Refactor src/index.ts to dual-mode entry point (scheduler|worker)"
   - "T8: Implement scheduler mode with scheduleRemJobs + Cloud Run Admin API fan-out"
   - "T9: Implement worker mode with RemJobWorker integration"
   - "T10: Update Cloud Scheduler to daily, deploy scripts, IAM"

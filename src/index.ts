@@ -1,8 +1,9 @@
 /**
  * remember-rem-job entry point.
  *
- * Thin Cloud Run Job wrapper: initializes infrastructure,
- * creates RemService, runs one cycle, exits.
+ * Dual-mode Cloud Run Job:
+ * - REM_MODE=scheduler: Enumerates collections, creates job records, triggers worker executions
+ * - REM_MODE=worker: Picks up a job by JOB_ID and runs RemJobWorker
  */
 
 import { ConfigService } from './config/config.service.js';
@@ -18,18 +19,24 @@ import {
   RemStateStore,
   createHaikuClient,
 } from '@prmichaelsen/remember-core/rem';
+import {
+  JobService,
+  RemJobWorker,
+  scheduleRemJobs,
+} from '@prmichaelsen/remember-core/services';
+import { runScheduler } from './scheduler.js';
+import { runWorker } from './worker.js';
 
-async function main(): Promise<void> {
-  // 1. Load config (fail-fast on missing env vars)
-  const config = new ConfigService();
+export async function initInfrastructure(config: ConfigService) {
   const logger = createLogger(config.appConfig.logLevel as LogLevel);
 
   logger.info('remember-rem-job starting', {
+    mode: config.appConfig.remMode,
     nodeEnv: config.appConfig.nodeEnv,
     logLevel: config.appConfig.logLevel,
   });
 
-  // 2. Initialize Weaviate
+  // Initialize Weaviate
   await initWeaviateClient({
     url: config.weaviateConfig.restUrl,
     apiKey: config.weaviateConfig.apiKey,
@@ -37,23 +44,30 @@ async function main(): Promise<void> {
   const weaviateClient = getWeaviateClient();
   logger.info('Weaviate client initialized');
 
-  // 3. Initialize Firestore
+  // Initialize Firestore
   initFirestore({
     serviceAccount: config.firebaseConfig.serviceAccountKey,
     projectId: config.firebaseConfig.projectId,
   });
   logger.info('Firestore initialized');
 
-  // 4. Create RemService dependencies
-  const stateStore = new RemStateStore();
+  return { logger, weaviateClient };
+}
+
+async function main(): Promise<void> {
+  const config = new ConfigService();
+  const { logger, weaviateClient } = await initInfrastructure(config);
+
   const haikuClient = createHaikuClient({
     apiKey: config.anthropicConfig.apiKey,
   });
 
+  const jobService = new JobService({ logger });
+  const stateStore = new RemStateStore();
+
   const relationshipServiceFactory = (collection: any, userId: string) =>
     new RelationshipService(collection, userId, logger);
 
-  // 5. Create RemService
   const remService = new RemService({
     weaviateClient,
     relationshipServiceFactory,
@@ -61,66 +75,23 @@ async function main(): Promise<void> {
     haikuClient,
     logger,
     config: {
-      max_candidates_per_run: 5000, // Large batch size increases odds of finding related memories
+      max_candidates_per_run: 5000,
     },
   });
 
-  // 6. Run 30 cycles per Cloud Run execution
-  const cycles = 30;
-  const aggregateStats = {
-    collections_processed: new Set<string>(),
-    memories_scanned: 0,
-    clusters_found: 0,
-    relationships_created: 0,
-    relationships_merged: 0,
-    relationships_split: 0,
-    skipped_by_haiku: 0,
-    total_duration_ms: 0,
-  };
-
-  logger.info('Starting REM batch', { cycles });
-
-  for (let i = 0; i < cycles; i++) {
-    const result = await remService.runCycle();
-
-    if (result.collection_id) {
-      aggregateStats.collections_processed.add(result.collection_id);
-    }
-    aggregateStats.memories_scanned += result.memories_scanned;
-    aggregateStats.clusters_found += result.clusters_found;
-    aggregateStats.relationships_created += result.relationships_created;
-    aggregateStats.relationships_merged += result.relationships_merged;
-    aggregateStats.relationships_split += result.relationships_split;
-    aggregateStats.skipped_by_haiku += result.skipped_by_haiku;
-    aggregateStats.total_duration_ms += result.duration_ms;
-
-    logger.debug('REM cycle completed', {
-      cycle: i + 1,
-      collection: result.collection_id ?? 'none',
-      memoriesScanned: result.memories_scanned,
-      clustersFound: result.clusters_found,
-    });
-
-    // Early exit if no collection to process
-    if (!result.collection_id) {
-      logger.info('No more collections to process, stopping early', { cycle: i + 1 });
+  switch (config.appConfig.remMode) {
+    case 'scheduler':
+      await runScheduler({ config, jobService, weaviateClient, logger });
       break;
-    }
+    case 'worker':
+      await runWorker({
+        config,
+        jobService,
+        remService,
+        logger,
+      });
+      break;
   }
-
-  // 7. Log aggregate results
-  logger.info('REM batch complete', {
-    cycles_executed: cycles,
-    collections_processed: Array.from(aggregateStats.collections_processed),
-    memoriesScanned: aggregateStats.memories_scanned,
-    clustersFound: aggregateStats.clusters_found,
-    relationshipsCreated: aggregateStats.relationships_created,
-    relationshipsMerged: aggregateStats.relationships_merged,
-    relationshipsSplit: aggregateStats.relationships_split,
-    skippedByHaiku: aggregateStats.skipped_by_haiku,
-    totalDurationMs: aggregateStats.total_duration_ms,
-    avgDurationPerCycleMs: Math.round(aggregateStats.total_duration_ms / cycles),
-  });
 }
 
 main()

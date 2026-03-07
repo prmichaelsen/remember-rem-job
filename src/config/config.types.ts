@@ -19,9 +19,19 @@ export interface AnthropicConfig {
   apiKey: string;
 }
 
+export type RemMode = 'scheduler' | 'worker';
+
 export interface AppConfig {
   nodeEnv: string;
   logLevel: string;
+  remMode: RemMode;
+  jobId: string | null;
+}
+
+export interface GcpConfig {
+  projectId: string;
+  region: string;
+  workerJobName: string;
 }
 
 export interface Config {
@@ -30,4 +40,5 @@ export interface Config {
   firebase: FirebaseConfig;
   embeddings: EmbeddingsConfig;
   anthropic: AnthropicConfig;
+  gcp: GcpConfig;
 }
