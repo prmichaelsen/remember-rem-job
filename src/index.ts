@@ -25,6 +25,7 @@ import {
   EmotionalScoringService,
   ScoringContextService,
   ClassificationService,
+  MoodService,
 } from '@prmichaelsen/remember-core/services';
 import { runScheduler } from './scheduler.js';
 import { runWorker } from './worker.js';
@@ -80,6 +81,9 @@ async function main(): Promise<void> {
   // Phase 7: Classification
   const classificationService = new ClassificationService();
 
+  // Phases 8-10: Mood (shared across ghost cycles, stateless)
+  const moodService = new MoodService();
+
   const remService = new RemService({
     weaviateClient,
     relationshipServiceFactory,
@@ -118,6 +122,7 @@ async function main(): Promise<void> {
             emotionalScoringService,
             scoringContextService,
             classificationService,
+            moodService,
             ghostCompositeId,
           }),
         weaviateClient,
