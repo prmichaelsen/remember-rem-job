@@ -17,6 +17,7 @@
     "verify": "tsx scripts/verify.ts",
     "diagnose": "tsx scripts/diagnose-cursor.ts",
     "test:local": "tsx scripts/test-local.ts",
+    "test:fanout": "tsx scripts/test-fanout.ts",
     "backfill:relationship-count": "tsx scripts/backfill-relationship-count.ts"
   },
   "engines": {

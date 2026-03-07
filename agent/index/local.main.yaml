@@ -48,3 +48,15 @@ local:
         Required context for deployment, infrastructure, and CI/CD tasks.
         Defines the runtime constraints that affect service implementation.
       applies: acp.init, acp.plan, acp.proceed, acp.task-create
+
+    - path: agent/design/local.ghost-scoped-rem-cycles.md
+      weight: 0.9
+      kind: design
+      description: |
+        Ghost-aware REM cycle scoping — per-ghost-composite-ID REM cycles within
+        user collections. Covers ghost composite ID patterns (personal, space, group),
+        Firestore-based discovery, tag filtering, and mood/perception state isolation.
+      rationale: |
+        Required context for implementing ghost-scoped REM processing. Defines the
+        relationship between ghost tags, composite IDs, and Firestore mood paths.
+      applies: acp.init, acp.plan, acp.proceed, acp.task-create, acp.design-create
