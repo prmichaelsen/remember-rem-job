@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-03-08
+
+### Added
+- Snapshot script (`scripts/snapshot.ts`) for before/after REM cycle benchmarking
+- Configurable `scoring_batch_size` and `classification_batch_size` in test-fanout script
+- `--collection` flag for test-local legacy mode to target specific collections
+
+### Changed
+- Upgrade @prmichaelsen/remember-core from 0.43.1 to 0.48.4 (Haiku model fix, code fence stripping, Firestore config, batch scoring, auto-approve removal)
+- Worker now passes `collectionId` to ghost REM cycle `runCycle()` call
+- Add `before.json` and `after.json` to `.gitignore`
+
 ## [0.3.0] - 2026-03-03
 
 ### Changed

@@ -16,7 +16,6 @@
  *
  * REM Config Options (legacy/worker mode):
  *   --batch=30                # Max candidates per run (default: 30)
- *   --auto-approve=0.85       # Auto-approve similarity threshold (0.0-1.0, default: 0.9)
  *   --similarity=0.70         # Base similarity threshold (0.0-1.0, default: 0.75)
  *   --seed-count=3            # LLM-enhanced seed count (default: 2)
  */
@@ -32,7 +31,6 @@ const envArg = args.find(arg => arg.startsWith('--env='));
 const modeArg = args.find(arg => arg.startsWith('--mode='));
 const jobIdArg = args.find(arg => arg.startsWith('--job-id='));
 const batchArg = args.find(arg => arg.startsWith('--batch='));
-const autoApproveArg = args.find(arg => arg.startsWith('--auto-approve='));
 const similarityArg = args.find(arg => arg.startsWith('--similarity='));
 const seedCountArg = args.find(arg => arg.startsWith('--seed-count='));
 
@@ -42,7 +40,6 @@ const mode = modeArg ? modeArg.split('=')[1] : 'legacy';
 let envFile: string;
 let envPath: string;
 let batch: number = 30;
-let autoApprove: number | undefined = undefined;
 let similarity: number | undefined = undefined;
 let seedCount: number | undefined = undefined;
 
@@ -66,9 +63,6 @@ if (!existsSync(envPath)) {
 
 if (batchArg) {
   batch = parseInt(batchArg.split('=')[1], 10);
-}
-if (autoApproveArg) {
-  autoApprove = parseFloat(autoApproveArg.split('=')[1]);
 }
 if (similarityArg) {
   similarity = parseFloat(similarityArg.split('=')[1]);
@@ -218,7 +212,6 @@ async function main(): Promise<void> {
 
     const remConfig = {
       max_candidates_per_run: batch,
-      ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
       ...(similarity !== undefined && { similarity_threshold: similarity }),
       ...(seedCount !== undefined && { seed_count: seedCount }),
     };
@@ -261,7 +254,14 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Legacy mode: direct RemService.runCycle()
+  // Legacy mode: direct RemService.runCycle() — requires --collection
+  const collectionArg = args.find(arg => arg.startsWith('--collection='));
+  if (!collectionArg) {
+    console.error('\n❌ Legacy mode requires --collection=COLLECTION_NAME');
+    console.error('   Example: npx tsx scripts/test-local.ts --collection=Memory_users_e1_test_user\n');
+    process.exit(1);
+  }
+  const legacyCollectionId = collectionArg.split('=')[1];
   const stateStore = new RemStateStore();
   const haikuClient = createHaikuClient({ apiKey: config.anthropicConfig.apiKey });
   const relationshipServiceFactory = (collection: any, userId: string) =>
@@ -273,7 +273,6 @@ async function main(): Promise<void> {
 
   const remConfig = {
     max_candidates_per_run: batch,
-    ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
     ...(similarity !== undefined && { similarity_threshold: similarity }),
     ...(seedCount !== undefined && { seed_count: seedCount }),
   };
@@ -294,7 +293,7 @@ async function main(): Promise<void> {
   console.log('   REM Config:');
   console.log(`     max_candidates_per_run: ${batch}`);
   console.log(`     similarity_threshold: ${similarity ?? '0.75 (default)'}`);
-  console.log(`     auto_approve_similarity: ${autoApprove ?? '0.9 (default)'}`);
+  // auto_approve_similarity removed
   console.log(`     seed_count: ${seedCount ?? '2 (default)'}`);
   console.log('');
 
@@ -302,7 +301,7 @@ async function main(): Promise<void> {
   console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n');
 
   const startTime = Date.now();
-  const cycleResult = await remService.runCycle();
+  const cycleResult = await remService.runCycle({ collectionId: legacyCollectionId });
   const duration = Date.now() - startTime;
 
   console.log('\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');

@@ -82,7 +82,7 @@ export async function runWorker(deps: WorkerDeps): Promise<void> {
         try {
           const ghostRemService = remServiceFactory(ghostCompositeId);
           // runCycle() will accept tagFilter once remember-core adds support
-          await (ghostRemService as any).runCycle({ tagFilter: [ghostCompositeId] });
+          await (ghostRemService as any).runCycle({ collectionId, tagFilter: [ghostCompositeId] });
 
           logger.info('Ghost REM cycle complete', {
             jobId,

@@ -37,7 +37,7 @@ function flag(name: string): string | undefined {
 }
 const isLive = args.includes('--live');
 const batch = parseInt(flag('batch') ?? '10', 10);
-const autoApprove = flag('auto-approve') ? parseFloat(flag('auto-approve')!) : undefined;
+// auto_approve_similarity removed from RemConfig
 const similarity = flag('similarity') ? parseFloat(flag('similarity')!) : undefined;
 const seedCount = flag('seed-count') ? parseInt(flag('seed-count')!, 10) : undefined;
 const collectionFilter = flag('collection');
@@ -105,7 +105,7 @@ async function main(): Promise<void> {
   console.log(`  FIREBASE_PROJECT:   ${config.firebaseConfig.projectId}`);
   console.log(`  batch:              ${batch}`);
   console.log(`  similarity:         ${similarity ?? '0.75 (default)'}`);
-  console.log(`  auto_approve:       ${autoApprove ?? '0.9 (default)'}`);
+  // auto_approve removed
   console.log(`  seed_count:         ${seedCount ?? '2 (default)'}`);
   if (collectionFilter) {
     console.log(`  collection filter:  ${collectionFilter}`);
@@ -240,7 +240,8 @@ async function main(): Promise<void> {
 
   const remConfig = {
     max_candidates_per_run: batch,
-    ...(autoApprove !== undefined && { auto_approve_similarity: autoApprove }),
+    scoring_batch_size: batch,
+    classification_batch_size: batch,
     ...(similarity !== undefined && { similarity_threshold: similarity }),
     ...(seedCount !== undefined && { seed_count: seedCount }),
   };

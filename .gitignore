@@ -48,3 +48,6 @@ coverage/
 .tmp/
 
 *-service.json
+
+before.json
+after.json
