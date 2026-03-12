@@ -18,7 +18,17 @@
       "Bash(npm link:*)",
       "Bash(grep:*)",
       "Bash(/tmp/test-env-load.mjs:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(bash:*)",
+      "Bash(npm view:*)",
+      "Bash(npm i:*)",
+      "Bash(gcloud run:*)",
+      "Bash(gcloud scheduler:*)",
+      "Bash(gcloud logging:*)",
+      "Bash(node:*)",
+      "Bash(npx jest:*)",
+      "Bash(git status:*)",
+      "Bash(git stash:*)"
     ]
   }
 }
